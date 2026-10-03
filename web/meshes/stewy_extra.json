@@ -27,9 +27,9 @@
  {
   "body": "top_plate",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 452220,
   "vertex_count": 6768,

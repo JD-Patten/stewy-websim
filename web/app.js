@@ -337,6 +337,7 @@ async function main() {
   // ---- three.js scene (MuJoCo is z-up) ----
   const stage = $("#stage");
   const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.outputEncoding = THREE.sRGBEncoding;   // colours are authored as sRGB hex; light in linear
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -364,6 +365,7 @@ async function main() {
   const gridTex = (repeat) => {
     const t = new THREE.CanvasTexture(gridCanvas);
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.encoding = THREE.sRGBEncoding;
     t.anisotropy = renderer.capabilities.getMaxAnisotropy();
     t.repeat.set(repeat, repeat);
     return t;
@@ -479,7 +481,7 @@ async function main() {
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     g.setIndex(new THREE.BufferAttribute(idx, 1));
     g.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(...piece.color), roughness: 0.62,
+    const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(...piece.color).convertSRGBToLinear(), roughness: 0.62,
       metalness: 0.05, flatShading: true });
     const mesh = new THREE.Mesh(g, mat);
     mesh.castShadow = true;
@@ -513,12 +515,12 @@ async function main() {
 
   function applyTheme() {
     const cs = getComputedStyle(document.documentElement);
-    const c = (n) => new THREE.Color(cs.getPropertyValue(n).trim() || "#888888");
+    const c = (n) => new THREE.Color(cs.getPropertyValue(n).trim() || "#888888").convertSRGBToLinear();
     scene.background = c("--scene");
-    drawGrid(cs.getPropertyValue("--scene").trim() || "#e6e9ed", cs.getPropertyValue("--grid-minor").trim() || "#b3bbc6",
-      cs.getPropertyValue("--grid-major").trim() || "#7f8a99");
-    trailLine.material.color = c("--telemetry");
-    arrow.setColor(c("--accent"));
+    drawGrid(cs.getPropertyValue("--floor").trim() || "#035772", cs.getPropertyValue("--grid-minor").trim() || "#5d8a9a",
+      cs.getPropertyValue("--grid-major").trim() || "#f6f9f5");
+    trailLine.material.color = c("--trail");
+    arrow.setColor(c("--arrow"));
   }
   applyTheme();
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);

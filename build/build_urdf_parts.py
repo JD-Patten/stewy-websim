@@ -33,7 +33,7 @@ ap.add_argument("--urdf", required=True, help="the exported main_assembly folder
 ap.add_argument("--grid", type=float, default=0.6, help="vertex clustering cell, mm")
 a = ap.parse_args()
 
-LIGHT_BLUE, SILVER = [0.55, 0.78, 0.95], [0.76, 0.78, 0.81]
+LIGHT_BLUE, SILVER = [0.647, 0.784, 0.831], [0.76, 0.78, 0.81]   # site light blue #a5c8d4
 # head parts that are 3D printed take the printed-part colour; hidden hardware is left out
 PRINTED = ("Head_Bottom_Half", "Head_Top_Half", "Distance_Sensor_Stop", "Joystick_Standoff")
 SKIP = ("_4mm_Heat_Set_Insert", "Socket_button_head_screw", "M3_Lock_Nut")

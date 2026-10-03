@@ -2,61 +2,37 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+  /* jdrobotics site palette: off-white, dark blue, lime, light blue, magenta. One light theme, to match the site. */
   :root {
-    --ground: #edf0f3;
-    --panel: #ffffff;
-    --panel-edge: #d5dae0;
-    --ink: #15181c;
-    --ink-soft: #5b6470;
-    --accent: #e27a12;
+    --off-white: #f6f9f5;
+    --dark-blue: #035772;
+    --lime: #e0fd2c;
+    --light-blue: #a5c8d4;
+    --magenta: #a12767;
+    --ground: var(--off-white);
+    --panel: var(--off-white);
+    --panel-edge: var(--light-blue);
+    --ink: var(--dark-blue);
+    --ink-soft: #3e7385;
+    --accent: var(--magenta);
     --accent-ink: #ffffff;
-    --telemetry: #2f55c8;
-    --track: #e3e7ec;
-    --scene: #e6e9ed;
-    --grid-major: #7f8a99;
-    --grid-minor: #b3bbc6;
+    --active: var(--lime);
+    --active-ink: var(--dark-blue);
+    --telemetry: var(--dark-blue);
+    --track: color-mix(in srgb, var(--light-blue) 55%, var(--off-white));
+    --scene: var(--off-white);
+    --floor: var(--dark-blue);
+    --grid-major: var(--off-white);
+    --grid-minor: rgba(246, 249, 245, 0.35);
+    --trail: var(--lime);
+    --arrow: var(--light-blue);
     --good: #2e8b57;
-    --warn: #c0392b;
+    --warn: var(--magenta);
     --radius: 10px;
     --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
     --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --ground: #111316;
-      --panel: #1a1d21;
-      --panel-edge: #2b3037;
-      --ink: #e8eaed;
-      --ink-soft: #9aa3ae;
-      --accent: #f29a3e;
-      --accent-ink: #1a1206;
-      --telemetry: #7d9bff;
-      --track: #262a30;
-      --scene: #16191d;
-      --grid-major: #69727f;
-      --grid-minor: #3b424b;
-      --good: #5ec08a;
-      --warn: #ff7b6b;
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --ground: #111316;
-    --panel: #1a1d21;
-    --panel-edge: #2b3037;
-    --ink: #e8eaed;
-    --ink-soft: #9aa3ae;
-    --accent: #f29a3e;
-    --accent-ink: #1a1206;
-    --telemetry: #7d9bff;
-    --track: #262a30;
-    --scene: #16191d;
-    --grid-major: #69727f;
-    --grid-minor: #3b424b;
-    --good: #5ec08a;
-    --warn: #ff7b6b;
+    color-scheme: light;
   }
   html, body { height: 100%; }
   body {
@@ -110,9 +86,9 @@
   #pad .dir { cursor: pointer; }
   #pad .dir path { fill: var(--track); stroke: var(--panel-edge); stroke-width: 1; transition: fill .15s; }
   #pad .dir:hover path, #pad .dir:focus-visible path { fill: color-mix(in srgb, var(--accent) 30%, var(--track)); }
-  #pad .dir.on path { fill: var(--accent); stroke: var(--accent); }
+  #pad .dir.on path { fill: var(--active); stroke: var(--dark-blue); }
   #pad .dir text { font: 600 11px var(--mono); fill: var(--ink-soft); pointer-events: none; }
-  #pad .dir.on text { fill: var(--accent-ink); }
+  #pad .dir.on text { fill: var(--active-ink); }
   #pad .dir:focus-visible { outline: none; }
   #pad .dir:focus-visible path { stroke: var(--ink); stroke-width: 2; }
   #pad .body { fill: var(--panel); stroke: var(--ink-soft); stroke-width: 1.5; }
@@ -124,7 +100,7 @@
     border: 1px solid var(--panel-edge); background: var(--ground); color: var(--ink); cursor: pointer;
   }
   button.act:hover { border-color: var(--ink-soft); }
-  button.act.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  button.act.on { background: var(--active); border-color: var(--dark-blue); color: var(--active-ink); }
   button.act:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .readouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .readout {
@@ -137,7 +113,7 @@
   .servo .n { font: 500 11px var(--mono); color: var(--ink-soft); }
   .servo .bar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
   .servo .bar i { display: block; height: 100%; width: 0; background: var(--telemetry); }
-  .servo .bar i.hot { background: var(--accent); }
+  .servo .bar i.hot { background: var(--magenta); }
   .servo .a { font: 400 11px var(--mono); color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
   .keys { color: var(--ink-soft); font-size: 12px; margin: 0; }
   kbd {

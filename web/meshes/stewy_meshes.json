@@ -26,9 +26,9 @@
  {
   "body": "root",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 25380,
   "vertex_count": 2544,
@@ -50,9 +50,9 @@
  {
   "body": "left_arm",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 171648,
   "vertex_count": 428,
@@ -74,9 +74,9 @@
  {
   "body": "leg_rod",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 198744,
   "vertex_count": 132,
@@ -122,9 +122,9 @@
  {
   "body": "left_arm_1",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 247404,
   "vertex_count": 428,
@@ -146,9 +146,9 @@
  {
   "body": "leg_rod_1",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 274500,
   "vertex_count": 132,
@@ -182,9 +182,9 @@
  {
   "body": "left_arm_2",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 285048,
   "vertex_count": 428,
@@ -206,9 +206,9 @@
  {
   "body": "leg_rod_5",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 312144,
   "vertex_count": 132,
@@ -242,9 +242,9 @@
  {
   "body": "right_arm",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 322692,
   "vertex_count": 431,
@@ -266,9 +266,9 @@
  {
   "body": "leg_rod_2",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 349872,
   "vertex_count": 132,
@@ -302,9 +302,9 @@
  {
   "body": "right_arm_1",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 360420,
   "vertex_count": 431,
@@ -326,9 +326,9 @@
  {
   "body": "leg_rod_3",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 387600,
   "vertex_count": 132,
@@ -362,9 +362,9 @@
  {
   "body": "right_arm_2",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 398148,
   "vertex_count": 431,
@@ -386,9 +386,9 @@
  {
   "body": "leg_rod_4",
   "color": [
-   0.55,
-   0.78,
-   0.95
+   0.647,
+   0.784,
+   0.831
   ],
   "vertex_offset": 425328,
   "vertex_count": 132,
