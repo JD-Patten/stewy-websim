@@ -430,11 +430,27 @@ async function main() {
   const oakTex = new THREE.CanvasTexture(oak);
   oakTex.encoding = THREE.sRGBEncoding;
   oakTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  const oakSide = new THREE.MeshStandardMaterial({ color: new THREE.Color("#a97c47").convertSRGBToLinear(), roughness: 0.7 });
-  const oakTop = new THREE.MeshStandardMaterial({ map: oakTex, roughness: 0.55 });
-  const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2 * DESK.hx, 2 * DESK.hy, DESK.t),
-    [oakSide, oakSide, oakSide, oakSide, oakTop, oakSide]);
-  deskTop.position.set(0, 0, DESK.top - DESK.t / 2);
+  // a 1/4 in fillet on every edge: a rectangle (inset by the radius, with a tiny corner radius so
+  // the bevel fans round the corners) extruded with a round bevel of that radius
+  const FILLET = 0.00635;
+  oakTex.wrapS = oakTex.wrapT = THREE.RepeatWrapping;
+  oakTex.repeat.set(1 / (2 * DESK.hx), 1 / (2 * DESK.hy));  // UVs are in metres: one texture across the top
+  oakTex.offset.set(0.5, 0.5);
+  const oakMat = new THREE.MeshStandardMaterial({ map: oakTex, roughness: 0.55 });
+  const ix = DESK.hx - FILLET, iy = DESK.hy - FILLET, c = 0.0005;
+  const outline = new THREE.Shape();
+  outline.moveTo(-ix + c, -iy);
+  outline.lineTo(ix - c, -iy); outline.absarc(ix - c, -iy + c, c, -Math.PI / 2, 0, false);
+  outline.lineTo(ix, iy - c); outline.absarc(ix - c, iy - c, c, 0, Math.PI / 2, false);
+  outline.lineTo(-ix + c, iy); outline.absarc(-ix + c, iy - c, c, Math.PI / 2, Math.PI, false);
+  outline.lineTo(-ix, -iy + c); outline.absarc(-ix + c, -iy + c, c, Math.PI, 1.5 * Math.PI, false);
+  const deskGeo = new THREE.ExtrudeGeometry(outline, {
+    depth: DESK.t - 2 * FILLET, bevelEnabled: true, bevelThickness: FILLET, bevelSize: FILLET,
+    bevelSegments: 8, curveSegments: 10,
+  });
+  deskGeo.computeVertexNormals();
+  const deskTop = new THREE.Mesh(deskGeo, oakMat);
+  deskTop.position.set(0, 0, DESK.frame + FILLET);           // bevel reaches FILLET below the extrusion
   deskTop.castShadow = deskTop.receiveShadow = true;
   scene.add(deskTop);
   function drawGrid(bg, minor, major) {
