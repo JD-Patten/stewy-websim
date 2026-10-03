@@ -7,8 +7,32 @@
    0.065
   ],
   "vertex_offset": 0,
-  "vertex_count": 2360,
-  "index_offset": 28320,
-  "index_count": 14784
+  "vertex_count": 1592,
+  "index_offset": 19104,
+  "index_count": 9768
+ },
+ {
+  "body": "desk_mid",
+  "color": [
+   0.06,
+   0.06,
+   0.065
+  ],
+  "vertex_offset": 58176,
+  "vertex_count": 160,
+  "index_offset": 60096,
+  "index_count": 648
+ },
+ {
+  "body": "desk",
+  "color": [
+   0.06,
+   0.06,
+   0.065
+  ],
+  "vertex_offset": 62688,
+  "vertex_count": 712,
+  "index_offset": 71232,
+  "index_count": 4368
  }
 ]

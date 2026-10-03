@@ -157,6 +157,31 @@ const FALL_GEOMS = {
   root: '<geom name="fall_base" class="contact" type="box" pos="0 0.0025 0.0255" size="0.038 0.034 0.0195"/>',
   top_plate: '<geom name="fall_plate" class="contact" type="box" pos="0.0274 0.00735 -0.01715" size="0.0415 0.0355 0.02415"/>',
 };
+// things on the desk (seen from the front, +x is right, +y is the back edge): a 27 in monitor in
+// the centre and a portrait 24 in to its right, each on an arm clamped to the back edge, and a
+// mid-tower PC at the right end. All low poly; each has a matching static collision shape
+const PROPS = (() => {
+  const T = DESK.top, d2r = Math.PI / 180;
+  const mon27 = { x: 0, y: 0.13, z: T + 0.335, w: 0.615, h: 0.37, yaw: 0 };
+  const mon24 = { x: 0.505, y: 0.115, z: T + 0.42, w: 0.31, h: 0.54, yaw: -20 * d2r };
+  const pc = { x: 0.775, y: 0.075, w: 0.21, d: 0.45, h: 0.46 };
+  const kb = { x: 0, y: -0.215, w: 0.293, d: 0.102, h: 0.03 };     // a 60 % keyboard near the front edge
+  const poles = [{ x: 0, mon: mon27, top: T + 0.40 }, { x: 0.505, mon: mon24, top: T + 0.49 }];
+  const collide = [
+    { type: "box", pos: [pc.x, pc.y, T + pc.h / 2], size: [pc.w / 2, pc.d / 2, pc.h / 2] },
+    { type: "box", pos: [kb.x, kb.y, T + kb.h / 2], size: [kb.w / 2, kb.d / 2, kb.h / 2] },
+    ...[mon27, mon24].map((m) => ({ type: "box", pos: [m.x, m.y, m.z], size: [m.w / 2, 0.03, m.h / 2], yaw: m.yaw })),
+    ...poles.flatMap((q) => [
+      { type: "box", pos: [q.x, 0.285, T + 0.006], size: [0.035, 0.045, 0.006] },
+      { type: "cylinder", pos: [q.x, 0.285, (T + q.top) / 2], size: [0.018, (q.top - T) / 2] },
+    ]),
+  ];
+  return { mon27, mon24, pc, kb, poles, collide };
+})();
+function propsXml() {
+  return PROPS.collide.map((c, i) => `<geom name="prop${i}" type="${c.type}" pos="${c.pos.join(" ")}" ` +
+    `size="${c.size.join(" ")}"${c.yaw ? ` euler="0 0 ${c.yaw}"` : ""} contype="2" conaffinity="1" friction="1 0.005 0.0001"/>`).join("");
+}
 function terrainXml(xml) {
   const m = xml.match(/<geom name="floor"[^>]*\/>/);
   if (!m) throw new Error("stewy.xml: no floor geom to replace with terrain");
@@ -174,7 +199,9 @@ function terrainXml(xml) {
   // a solid plane under the heightfield: a robot falling off the desk lands at ~5 m/s, fast
   // enough for its small contact spheres to pass through the thin heightfield in one step
   const backstop = '<geom name="floor_plane" type="plane" size="0 0 1" contype="2" conaffinity="1" friction="1 0.005 0.0001"/>';
-  return xml.replace(m[0], geom + desk + backstop).replace("<worldbody>", asset + "<worldbody>");
+  const deskBodies = `<body name="desk" mocap="true" pos="0 0 0">${desk}${propsXml()}</body>` +
+    '<body name="desk_mid" mocap="true" pos="0 0 0"/>';
+  return xml.replace(m[0], geom + backstop + deskBodies).replace("<worldbody>", asset + "<worldbody>");
 }
 function mulberry32(a) {
   return () => {
@@ -208,7 +235,7 @@ function perlin(seed) {                                  // Ken Perlin's improve
 
 // ---- boot ---------------------------------------------------------------------------------
 async function fetchOk(url, kind) {
-  const r = await fetch(url);
+  const r = await fetch(window.ASSET_V ? `${url}?v=${window.ASSET_V}` : url);
   if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
   return kind === "json" ? r.json() : kind === "text" ? r.text() : r.arrayBuffer();
 }
@@ -274,6 +301,16 @@ async function main() {
   if (Object.values(pol).some((p) => Math.abs(p.control_dt - ctrlDt) > 1e-9)) throw new Error("walkers differ in control_dt");
   const sub = Math.round(ctrlDt / physDt);
 
+  // the desk's height below its full (as-modelled) height, and where it is heading
+  const DESK_SPEED = 0.12;                              // m/s
+  let deskOff = 0, deskGoal = 0;
+  const deskMocap = model.body_mocapid[mujoco.mj_name2id(model, BODY, "desk")];
+  const midMocap = model.body_mocapid[mujoco.mj_name2id(model, BODY, "desk_mid")];
+  function placeDesk() {
+    data.mocap_pos[3 * deskMocap + 2] = deskOff;
+    data.mocap_pos[3 * midMocap + 2] = deskOff / 2;
+  }
+
   // ---- controller state ----
   let mode = { kind: "stand" }, phase = 0, filt = new Float64Array(6), simTime = 0;
   let servos, target = new Float64Array(6);
@@ -282,6 +319,7 @@ async function main() {
   const readQd = () => { const v = data.qvel; return jv.map((a) => v[a]); };
   function resetRobot() {
     mujoco.mj_resetData(model, data);
+    placeDesk();                                        // reset puts mocap bodies back at their model height
     moveTerrain(0, 0);
     data.qpos[2] += Math.max(0, footprintTop(0, 0)) + 0.002;   // drop onto the ground, never into it
     mujoco.mj_forward(model, data);
@@ -340,6 +378,11 @@ async function main() {
     }
     loads.fill(0);
     for (let s = 0; s < sub; s++) {
+      if (deskOff !== deskGoal) {
+        const step = DESK_SPEED * physDt;
+        deskOff = Math.abs(deskGoal - deskOff) <= step ? deskGoal : deskOff + Math.sign(deskGoal - deskOff) * step;
+        placeDesk();
+      }
       const tau = servos.torque(target, readQ(), readQd());
       const ctrl = data.ctrl;
       for (let i = 0; i < 6; i++) { ctrl[i] = tau[i]; loads[i] += Math.abs(tau[i]) / sub; }
@@ -350,7 +393,8 @@ async function main() {
     const yaw = Math.atan2(2 * (q[3] * q[6] + q[4] * q[5]), 1 - 2 * (q[5] * q[5] + q[6] * q[6]));
     history.push([simTime, q[0], q[1], yaw]);
     while (history.length > 60) history.shift();
-    trail.push(q[0], q[1]);
+    if (deskOff === deskGoal) trail.push(q[0], q[1]);    // no trail while the desk moves under it
+    else trail.count = 0;
     if (Math.max(Math.abs(q[0] - tc[0]), Math.abs(q[1] - tc[1])) > TER.recentre) moveTerrain(q[0], q[1]);
     if (q[2] < -0.2 || !Number.isFinite(q[2])) resetRobot();
   }
@@ -452,7 +496,10 @@ async function main() {
   const deskTop = new THREE.Mesh(deskGeo, oakMat);
   deskTop.position.set(0, 0, DESK.frame + FILLET);           // bevel reaches FILLET below the extrusion
   deskTop.castShadow = deskTop.receiveShadow = true;
-  scene.add(deskTop);
+  const deskMover = new THREE.Group();                 // the desk top and what's on it ride with the desk
+  scene.add(deskMover);
+  deskMover.add(deskTop);
+  buildDeskProps(deskMover);
   function drawGrid(bg, minor, major) {
     const g = gridCanvas.getContext("2d"), s = gridCanvas.width;
     g.fillStyle = bg; g.fillRect(0, 0, s, s);
@@ -482,7 +529,7 @@ async function main() {
     return t * t * (3 - 2 * t);
   }
   const onDesk = (x, y) => Math.abs(x) <= DESK.hx && Math.abs(y) <= DESK.hy;
-  const groundAt = (x, y) => (onDesk(x, y) ? DESK.top : flat() ? 0 : groundRaw(x, y) * taper(x, y));
+  const groundAt = (x, y) => (onDesk(x, y) ? DESK.top + deskOff : flat() ? 0 : groundRaw(x, y) * taper(x, y));
   function footprintTop(x, y) {                        // highest ground (or desk) within 9 cm of (x, y)
     let top = -Infinity;
     for (let i = -8; i <= 8; i++) for (let j = -8; j <= 8; j++) {
@@ -624,6 +671,7 @@ async function main() {
       grp.quaternion.set(xq[4 * id + 1], xq[4 * id + 2], xq[4 * id + 3], xq[4 * id]);
     }
     const q = data.qpos;
+    deskMover.position.z = deskOff;
     const root = new THREE.Vector3(q[0], q[1], q[2]);   // the camera follows the robot's height too
     if ($("#sel-cam").value === "follow") {
       if (lastRoot) { const d = root.clone().sub(lastRoot); camera.position.add(d); controls.target.add(d); }
@@ -776,6 +824,11 @@ async function main() {
       a: { kind: "turn", dir: 1 }, d: { kind: "turn", dir: -1 }, s: { kind: "stand" } };
     if (map[k]) setMode(map[k]);
     else if (k === "r") { resetRobot(); setMode({ kind: "stand" }); }
+    else if (k === "1" || k === "2" || k === "3") {
+      const low = 0.0254 * 25.5 - DESK.top;
+      deskGoal = { 1: low, 2: low / 2, 3: 0 }[k];
+      trail.count = 0;                                  // the old trail would hang in the air
+    }
   });
 
   resetRobot();
@@ -798,3 +851,119 @@ async function main() {
 }
 
 main().catch((e) => { console.error(e); say(e.message || String(e), true); });
+
+
+// ---- the low-poly desk setup (PROPS): monitors on clamped arms, and a PC -------------------------
+function buildDeskProps(scene) {
+  const T = DESK.top;
+  const mat = (hex, o = {}) => new THREE.MeshStandardMaterial(Object.assign({
+    color: new THREE.Color(hex).convertSRGBToLinear(), roughness: 0.6, metalness: 0.1, flatShading: true }, o));
+  const body = mat("#1b1c20"), arm = mat("#2a2c31", { metalness: 0.4, roughness: 0.45 });
+  const steel = mat("#8d9298", { metalness: 0.6, roughness: 0.35 });
+  const add = (geo, m, x, y, z, parent = scene) => {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; parent.add(o); return o;
+  };
+  const box = (w, d, h) => new THREE.BoxGeometry(w, d, h);
+  const cyl = (r, h, n = 10) => new THREE.CylinderGeometry(r, r, h, n);
+  const upright = (o) => { o.rotation.x = Math.PI / 2; return o; };      // three.js cylinders run along y
+  function link(a, b, w, h) {                                             // a flat bar between two points
+    const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), mid = A.clone().add(B).multiplyScalar(0.5);
+    const o = add(box(A.distanceTo(B), w, h), arm, mid.x, mid.y, mid.z);
+    o.rotation.z = Math.atan2(B.y - A.y, B.x - A.x);
+    return o;
+  }
+  function screenTex(portrait) {                                          // "code" in the site palette
+    const c = document.createElement("canvas");
+    c.width = portrait ? 540 : 960; c.height = portrait ? 960 : 540;
+    const g = c.getContext("2d"), r = mulberry32(portrait ? 7 : 3);
+    g.fillStyle = "#0b2730"; g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = "#035772"; g.fillRect(0, 0, c.width, 34);
+    const cols = ["#a5c8d4", "#f6f9f5", "#a12767", "#e0fd2c", "#6f9fb0"];
+    for (let y = 60; y < c.height - 20; y += 22) {
+      let x = 24 + Math.floor(r() * 4) * 24;
+      const n = 1 + Math.floor(r() * 5);
+      for (let k = 0; k < n && x < c.width - 40; k++) {
+        const len = 30 + r() * 140;
+        g.fillStyle = cols[Math.floor(r() * cols.length)]; g.globalAlpha = 0.85;
+        g.fillRect(x, y, Math.min(len, c.width - 30 - x), 9);
+        x += len + 14;
+      }
+    }
+    g.globalAlpha = 1;
+    const t = new THREE.CanvasTexture(c);
+    t.encoding = THREE.sRGBEncoding;
+    return t;
+  }
+  function monitor(m, portrait) {
+    const g = new THREE.Group();
+    g.position.set(m.x, m.y, m.z); g.rotation.z = m.yaw; scene.add(g);
+    add(box(m.w, 0.022, m.h), body, 0, 0, 0, g);                                     // panel
+    const tex = screenTex(portrait);
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(m.w - 0.016, m.h - 0.03),
+      new THREE.MeshStandardMaterial({ map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.9, roughness: 0.3 }));
+    scr.rotation.x = Math.PI / 2; scr.position.set(0, -0.0115, 0.006); g.add(scr);     // faces -y, the front
+    add(box(m.w * 0.6, 0.03, m.h * 0.55), body, 0, 0.025, -0.01, g);                   // back housing
+    add(box(0.1, 0.012, 0.1), steel, 0, 0.046, 0, g);                                  // VESA plate
+  }
+  monitor(PROPS.mon27, false);
+  monitor(PROPS.mon24, true);
+  // each arm: a C-clamp on the back edge, a pole, a collar and two links to the VESA plate
+  PROPS.poles.forEach((q, i) => {
+    const y = 0.285, m = q.mon, edge = DESK.hy;
+    add(box(0.07, 0.09, 0.012), arm, q.x, y, T + 0.006);                                // clamp top
+    add(box(0.07, 0.016, DESK.t + 0.045), arm, q.x, edge + 0.008, T - DESK.t / 2 - 0.01); // clamp spine
+    add(box(0.07, 0.07, 0.01), arm, q.x, edge - 0.025, T - DESK.t - 0.03);              // jaw under the desk
+    upright(add(cyl(0.004, 0.03, 8), steel, q.x, edge - 0.025, T - DESK.t - 0.012));   // clamp screw
+    upright(add(cyl(0.018, q.top - T), arm, q.x, y, (T + q.top) / 2));                 // pole
+    upright(add(cyl(0.02, 0.01), steel, q.x, y, q.top));                               // pole cap
+    const plate = new THREE.Vector3(0, 0.055, 0).applyEuler(new THREE.Euler(0, 0, m.yaw)).add(new THREE.Vector3(m.x, m.y, m.z));
+    const elbow = [q.x + (i ? -0.14 : 0.16), (y + plate.y) / 2 + 0.03, m.z];
+    upright(add(cyl(0.026, 0.03), arm, q.x, y, m.z));                                  // collar
+    link([q.x, y, m.z], elbow, 0.03, 0.025);
+    upright(add(cyl(0.02, 0.03), steel, ...elbow));                                    // elbow joint
+    link(elbow, [plate.x, plate.y, plate.z], 0.03, 0.025);
+  });
+  // the PC: a mid tower at the right end, glass side facing the middle of the desk
+  const pc = PROPS.pc, cx = pc.x, cy = pc.y, zc = T + 0.02 + (pc.h - 0.02) / 2;
+  add(box(pc.w, pc.d, pc.h - 0.02), body, cx, cy, zc);
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) =>
+    add(box(0.03, 0.05, 0.02), arm, cx + sx * (pc.w / 2 - 0.025), cy + sy * (pc.d / 2 - 0.04), T + 0.01));  // feet
+  const glass = new THREE.MeshStandardMaterial({ color: 0x223038, transparent: true, opacity: 0.45, roughness: 0.1, metalness: 0.3 });
+  add(box(0.004, pc.d - 0.03, pc.h - 0.06), glass, cx - pc.w / 2 - 0.002, cy, zc);
+  const glow = (hex) => new THREE.MeshStandardMaterial({ color: new THREE.Color(hex).convertSRGBToLinear(),
+    emissive: new THREE.Color(hex).convertSRGBToLinear(), emissiveIntensity: 0.9, roughness: 0.4 });
+  [T + 0.33, T + 0.17].forEach((z) => {                                               // two fans behind the glass
+    add(new THREE.TorusGeometry(0.055, 0.008, 6, 16), glow("#a5c8d4"), cx - pc.w / 2 + 0.03, cy - pc.d / 2 + 0.07, z).rotation.y = Math.PI / 2;
+  });
+  add(box(0.06, 0.12, 0.12), mat("#2f3238"), cx - 0.02, cy + 0.08, T + 0.3);          // graphics card
+  add(box(pc.w - 0.03, 0.006, pc.h - 0.08), mat("#24262b"), cx, cy - pc.d / 2 - 0.003, zc);   // front panel
+  for (let k = 0; k < 7; k++) add(box(0.006, 0.004, pc.h - 0.14), mat("#111215"), cx - 0.06 + k * 0.02, cy - pc.d / 2 - 0.006, T + 0.25);
+  upright(add(cyl(0.009, 0.006, 12), glow("#a12767"), cx, cy - pc.d / 2 - 0.008, T + pc.h - 0.04));   // power button
+
+  // a black 60 % keyboard (ANSI layout, 19.05 mm key pitch), tilted up a little at the back
+  const kb = PROPS.kb, U = 0.01905;
+  const kbd = new THREE.Group();
+  kbd.position.set(kb.x, kb.y, T); scene.add(kbd);
+  const kcase = mat("#141517"), cap = mat("#1d1e22"), mod = mat("#26282d");
+  const caseMesh = add(box(kb.w, kb.d, 0.018), kcase, 0, 0, 0.011, kbd);
+  caseMesh.rotation.x = 0.06;
+  const rows = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+    [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5],
+    [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.25],
+    [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.75],
+    [1.25, 1.25, 1.25, 6.25, 1.25, 1.25, 1.25, 1.25],
+  ];
+  rows.forEach((row, r) => {
+    let x = -7.5 * U;
+    const y = (2 - r) * U, z = 0.024 + (2 - r) * U * 0.06;
+    row.forEach((wu, k) => {
+      const special = wu !== 1 || (r === 0 && k === 0);
+      const m = r === 0 && k === 0 ? glow("#a12767") : special ? mod : cap;    // Esc in the site's burgundy
+      const key = add(box(wu * U - 0.0035, U - 0.0035, 0.008), m, x + (wu * U) / 2, y, z, kbd);
+      key.rotation.x = 0.06;
+      x += wu * U;
+    });
+  });
+}

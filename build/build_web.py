@@ -84,6 +84,13 @@ body = open(os.path.join(WEB, "app.html"), encoding="utf-8").read()
 import hashlib
 _v = hashlib.sha1(open(os.path.join(WEB, "app.js"), "rb").read()).hexdigest()[:10]
 body = body.replace('src="app.js"', f'src="app.js?v={_v}"')
+# ...and every data file it fetches by one hash of them all
+_h = hashlib.sha1()
+for _root, _dirs, _files in sorted(os.walk(WEB)):
+    for _f in sorted(_files):
+        if _f.endswith((".json", ".xml", ".wasm")):
+            _h.update(open(os.path.join(_root, _f), "rb").read())
+body = body.replace('<script type="module" src="app.js', f'<script>window.ASSET_V = "{_h.hexdigest()[:10]}";</script>\n<script type="module" src="app.js', 1)
 open(os.path.join(WEB, "index.html"), "w", encoding="utf-8").write(
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
