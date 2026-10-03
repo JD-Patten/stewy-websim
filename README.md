@@ -13,7 +13,6 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
   - **B** walks away from the head, on a time-reversed firmware gait.
   - **C** walks 60° off the head axis, on a steered firmware gait. Mirroring gives it six directions.
 - **Turn in place** either way. Clockwise is the mirror image of counter-clockwise.
-- **Compare policies**: earlier walkers and turners are in the Walker and Turner menus, with their measured speed and smoothness.
 - **Change the ground**: hills, bumps and grit sliders. Every policy was trained on flat ground, blind, so this shows how far that carries.
 
 | Input | Action |
@@ -46,7 +45,7 @@ Then open http://localhost:8733.
 `build/` regenerates everything in `web/`:
 
 - `build_mjcf.py`: `stewy_usd.json` (dumped from the Isaac USD) → `web/stewy.xml` and `web/stewy_meta.json`.
-- `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab) → compact `web/policies/`, the menu manifest, the mesh pack and `web/index.html`.
+- `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab, including earlier walkers and turners kept for comparison) → compact `web/policies/` for the policies the page ships (`SHIP`), the manifest, the mesh pack and `web/index.html`.
 - `harness.py`: runs any policy in Python MuJoCo with the same servo law and observation path as the page, to measure it outside the browser (`python harness.py walk_smoother`).
 
 ## Credits
