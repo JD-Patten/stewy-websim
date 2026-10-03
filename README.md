@@ -46,6 +46,7 @@ Then open http://localhost:8733.
 
 - `build_mjcf.py`: `stewy_usd.json` (dumped from the Isaac USD) → `web/stewy.xml` and `web/stewy_meta.json`.
 - `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab, including earlier walkers and turners kept for comparison) → compact `web/policies/` for the policies the page ships (`SHIP`), the manifest, the mesh pack and `web/index.html`.
+- `stewy_usd_meshes.py` (runs in Isaac Lab): the robot's visual meshes from the USD, coloured by part name with `palette.json` (`--palette build/palette.json --out_dir web/meshes`).
 - `harness.py`: runs any policy in Python MuJoCo with the same servo law and observation path as the page, to measure it outside the browser (`python harness.py walk_smoother`).
 
 ## Credits
