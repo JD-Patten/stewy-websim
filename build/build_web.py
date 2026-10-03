@@ -41,8 +41,16 @@ MENU = {"walk62": ("62 mm/s: fastest, shakiest", "walk62"),
 # directions by rotating (and for C, mirroring) the legs; the page combines them into 12
 GROUP = {"walk_smoother": "A", "dir_b_away": "B", "dir_c_steer": "C"}
 
+# the policies the page ships: the three-walker set and the calm-legs turner
+SHIP = {"walk_smoother", "dir_b_away", "dir_c_steer", "spin_calm_legs"}
+for p in glob.glob(os.path.join(WEB, "policies", "*.json")):
+    if os.path.splitext(os.path.basename(p))[0] not in SHIP | {"manifest"}:
+        os.remove(p)
+
 manifest = []
 for p in sorted(glob.glob(os.path.join(HERE, "policies", "*.json"))):
+    if os.path.splitext(os.path.basename(p))[0] not in SHIP:
+        continue
     d = json.load(open(p))
     name = os.path.splitext(os.path.basename(p))[0]
     d.pop("checkpoint", None)
@@ -62,6 +70,10 @@ json.dump(dict(pieces=man, data=base64.b64encode(bin_).decode()), open(os.path.j
 print(f"mesh pack: {os.path.getsize(os.path.join(WEB, 'meshes', 'stewy_mesh_pack.json'))/1024:.0f} KB")
 
 body = open(os.path.join(WEB, "app.html"), encoding="utf-8").read()
+# cache-bust app.js by its content, so a new page never runs a stale cached script
+import hashlib
+_v = hashlib.sha1(open(os.path.join(WEB, "app.js"), "rb").read()).hexdigest()[:10]
+body = body.replace('src="app.js"', f'src="app.js?v={_v}"')
 open(os.path.join(WEB, "index.html"), "w", encoding="utf-8").write(
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'

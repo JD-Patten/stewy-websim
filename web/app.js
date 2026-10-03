@@ -205,13 +205,9 @@ async function main() {
   const pol = Object.fromEntries(await Promise.all(
     walkMs.map(async (m) => [m.name, await fetchOk(`policies/${m.name}.json`, "json")])));
   const groupMs = walkMs.filter((m) => m.group).sort((a, b) => a.group.localeCompare(b.group));
-  const walkers = walkMs.filter((m) => !m.group || m.group === "A")
-    .sort((a, b) => (b.name === "walk_smoother") - (a.name === "walk_smoother") ||
-      (a.mode === "omni") - (b.mode === "omni"));
-  if (groupMs.length === 3) {
-    walkers.splice(1, 0, { name: "three_walkers", label: "42 mm/s: 12 directions from three walkers (A, B, C)",
-      short: "3 walkers", combo: true, base: groupMs[0].name });
-  }
+  // one walker on the page: the three-walker set, which picks a group walker per direction
+  if (groupMs.length !== 3) throw new Error("the three-walker set needs walkers A, B and C");
+  const walkers = [{ name: "three_walkers", combo: true, base: groupMs[0].name }];
   const walkPs = walkers.map((m) => pol[m.combo ? m.base : m.name]);
   // turn-in-place policies (pose IK); the robot's own turn first
   const turners = manifest.filter((m) => m.action === "pose_ik" && m.mode !== "omni")
@@ -644,9 +640,7 @@ async function main() {
     });
     pad.innerHTML = s;
     $("#hud-policy").textContent = mode.kind === "walk"
-      ? `${walkers[wi].short || walkers[wi].name} ${!omni ? ["toward head", "dir 2", "dir 3"][mode.k]
-        : fromHead(dirs()[mode.k]) ? `${fromHead(dirs()[mode.k])}° from head` : "toward head"}${
-        isCombo() ? ` (${comboMap.get(dirs()[mode.k]).group})` : ""}`
+      ? (fromHead(dirs()[mode.k]) ? `walk ${fromHead(dirs()[mode.k])}° from head` : "walk toward head")
       : mode.kind === "turn" ? (mode.dir > 0 ? "turn ccw" : "turn cw") : "stand";
   }
   function updateButtons() { $("#btn-stop").classList.toggle("on", mode.kind === "stand"); }
@@ -660,21 +654,6 @@ async function main() {
   pad.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(e.target); } });
   $("#btn-stop").addEventListener("click", () => setMode({ kind: "stand" }));
   $("#btn-reset").addEventListener("click", () => { resetRobot(); setMode({ kind: "stand" }); });
-  const selWalk = $("#sel-walk");
-  selWalk.innerHTML = walkers.map((m, i) => `<option value="${i}">${m.label}</option>`).join("");
-  selWalk.addEventListener("change", (e) => {
-    const was = mode.kind === "walk" ? dirs()[mode.k] : null;
-    wi = +e.target.value; walkP = walkPs[wi]; walk = walkNets[wi];
-    // restart the gait clock on the new walker, keeping the nearest direction it has
-    if (was !== null) setMode({ kind: "walk", k: nearest(was) });
-    else renderPad();
-  });
-  const selTurn = $("#sel-turn");
-  selTurn.innerHTML = turners.map((m, i) => `<option value="${i}">${m.label}</option>`).join("");
-  selTurn.addEventListener("change", (e) => {
-    spinP = spinPs[+e.target.value]; spin = spinNets[+e.target.value];
-    if (mode.kind === "turn") setMode(mode);
-  });
   // terrain sliders: height (peak-to-peak mm) and feature size (cm) per noise layer
   const terr = $("#terrain");
   const fmt = { h: (v) => `${v} mm`, s: (v) => `${v} cm` };
