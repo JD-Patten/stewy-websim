@@ -149,6 +149,9 @@
     font: 500 12px var(--body); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--panel-edge);
     background: var(--ground); color: var(--ink);
   }
+  .chk { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--ink); }
+  .chk input { margin: 0; accent-color: var(--accent); width: 15px; height: 15px; }
+  .chk input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .note { font-size: 12px; color: var(--ink-soft); margin: 0; }
   .terrain { display: grid; gap: 12px; }
   .lvl { display: grid; gap: 4px; }
@@ -177,15 +180,7 @@
   </div>
 
   <aside class="rail">
-    <div class="brand">
-      <h1>Stewy <span>Live</span></h1>
-      <small>MuJoCo 3.14<br>in your browser</small>
-    </div>
-    <p class="lede">A six-servo Stewart-platform walker with no sensors, running the same neural policies
-      trained for the real robot in Isaac Lab. Pick a direction on the robot below.</p>
-
     <section>
-      <p class="label">Drive (robot view, head up)</p>
       <div class="pad-wrap">
         <svg id="pad" viewBox="-120 -120 240 240" role="group" aria-label="Walking and turning controls"></svg>
       </div>
@@ -219,6 +214,7 @@
     </section>
 
     <div class="opts">
+      <label class="chk"><input type="checkbox" id="chk-head" checked> Head</label>
       <label for="sel-rate">Speed</label>
       <select id="sel-rate">
         <option value="1">Real time</option>
@@ -234,12 +230,6 @@
 
     <p class="keys">Arrows or <kbd>W</kbd> <kbd>Q</kbd> <kbd>E</kbd> walk (12 directions) ·
       <kbd>A</kbd> <kbd>D</kbd> turn · <kbd>S</kbd> stand · <kbd>R</kbd> reset</p>
-    <p class="note" id="policy-note">Walking: three neural-network walkers, each reused by rotating and mirroring
-      Stewy's legs (it is exactly 3-fold and mirror symmetric), cover all 12 directions at about 42 mm/s. Turning in
-      place: a network trained for calm legs, about 42 °/s, mirrored for the other direction. These are the same
-      networks that run on the real robot, trained in Isaac Lab and never in this simulator. Servos use the MG90S
-      model measured on the bench. The terrain is new to them: every policy was trained on flat ground, blind, so this
-      shows how far that carries.</p>
   </aside>
 </div>
 

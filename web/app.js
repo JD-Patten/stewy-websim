@@ -471,7 +471,7 @@ async function main() {
   }
 
   // robot: one group per MuJoCo body, meshes in the body's own frame
-  const groups = new Map();
+  const groups = new Map(), headMeshes = [];
   for (const piece of meshMan) {
     const pos = new Float32Array(meshBin, piece.vertex_offset, piece.vertex_count * 3);
     const idx = new Uint32Array(meshBin, piece.index_offset, piece.index_count);
@@ -483,6 +483,7 @@ async function main() {
       metalness: 0.05, flatShading: true });
     const mesh = new THREE.Mesh(g, mat);
     mesh.castShadow = true;
+    if (piece.group === "head") headMeshes.push(mesh);
     if (!groups.has(piece.body)) {
       const grp = new THREE.Group();
       grp.userData.id = mujoco.mj_name2id(model, BODY, piece.body);
@@ -491,6 +492,10 @@ async function main() {
     }
     groups.get(piece.body).add(mesh);
   }
+  const chkHead = $("#chk-head");
+  const showHead = () => headMeshes.forEach((h) => { h.visible = chkHead.checked; });
+  chkHead.addEventListener("change", showHead);
+  showHead();
   // path trail and a ground arrow for the walking command
   const trail = {
     max: 3000, count: 0, buf: new Float32Array(3000 * 3),

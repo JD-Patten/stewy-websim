@@ -1,0 +1,255 @@
+[
+ {
+  "body": "top_plate",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 0,
+  "vertex_count": 1532,
+  "index_offset": 18384,
+  "index_count": 9192
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.91,
+   0.91,
+   0.91
+  ],
+  "vertex_offset": 55152,
+  "vertex_count": 10670,
+  "index_offset": 183192,
+  "index_count": 67257,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.55,
+   0.78,
+   0.95
+  ],
+  "vertex_offset": 452220,
+  "vertex_count": 6768,
+  "index_offset": 533436,
+  "index_count": 42228,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.894,
+   0.89,
+   0.812
+  ],
+  "vertex_offset": 702348,
+  "vertex_count": 135,
+  "index_offset": 703968,
+  "index_count": 798,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.824,
+   0.82,
+   0.78
+  ],
+  "vertex_offset": 707160,
+  "vertex_count": 421,
+  "index_offset": 712212,
+  "index_count": 2508,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.1,
+   0.3,
+   0.7
+  ],
+  "vertex_offset": 722244,
+  "vertex_count": 2929,
+  "index_offset": 757392,
+  "index_count": 23718,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.067,
+   0.067,
+   0.067
+  ],
+  "vertex_offset": 852264,
+  "vertex_count": 704,
+  "index_offset": 860712,
+  "index_count": 8598,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.855,
+   0.804,
+   0.0
+  ],
+  "vertex_offset": 895104,
+  "vertex_count": 1568,
+  "index_offset": 913920,
+  "index_count": 8778,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.157,
+   0.157,
+   0.157
+  ],
+  "vertex_offset": 949032,
+  "vertex_count": 764,
+  "index_offset": 958200,
+  "index_count": 4920,
+  "group": "head"
+ },
+ {
+  "body": "left_arm",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 977880,
+  "vertex_count": 892,
+  "index_offset": 988584,
+  "index_count": 5352
+ },
+ {
+  "body": "left_arm_1",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 1009992,
+  "vertex_count": 892,
+  "index_offset": 1020696,
+  "index_count": 5352
+ },
+ {
+  "body": "right_arm",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 1042104,
+  "vertex_count": 895,
+  "index_offset": 1052844,
+  "index_count": 5370
+ },
+ {
+  "body": "right_arm_1",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 1074324,
+  "vertex_count": 892,
+  "index_offset": 1085028,
+  "index_count": 5352
+ },
+ {
+  "body": "right_arm_2",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 1106436,
+  "vertex_count": 892,
+  "index_offset": 1117140,
+  "index_count": 5352
+ },
+ {
+  "body": "left_arm_2",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 1138548,
+  "vertex_count": 895,
+  "index_offset": 1149288,
+  "index_count": 5364
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.188,
+   0.188,
+   0.188
+  ],
+  "vertex_offset": 1170744,
+  "vertex_count": 3661,
+  "index_offset": 1214676,
+  "index_count": 23034,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.8,
+   0.8,
+   0.8
+  ],
+  "vertex_offset": 1306812,
+  "vertex_count": 212,
+  "index_offset": 1309356,
+  "index_count": 1260,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.251,
+   0.251,
+   0.251
+  ],
+  "vertex_offset": 1314396,
+  "vertex_count": 218,
+  "index_offset": 1317012,
+  "index_count": 1314,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.945,
+   0.988,
+   0.937
+  ],
+  "vertex_offset": 1322268,
+  "vertex_count": 771,
+  "index_offset": 1331520,
+  "index_count": 4746,
+  "group": "head"
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.506,
+   0.506,
+   0.506
+  ],
+  "vertex_offset": 1350504,
+  "vertex_count": 367,
+  "index_offset": 1354908,
+  "index_count": 2316,
+  "group": "head"
+ }
+]

@@ -17,7 +17,7 @@ ap.add_argument("--usd", default=r"C:\Users\JD\Documents\stewy\isaacsim\stewy_ro
 ap.add_argument("--out_dir", required=True)
 ap.add_argument("--grid", type=float, default=0.6, help="vertex clustering cell, mm (0 = keep all)")
 ap.add_argument("--palette", default=None,
-                help="JSON file {part-name substring: [r,g,b]}, checked in order before the defaults")
+                help="JSON file {part-name substring: [r,g,b] or null to leave it out}, checked in order before the defaults")
 ap.add_argument("--list", action="store_true", help="print every part with the colour it gets")
 AppLauncher.add_app_launcher_args(ap)
 a, _ = ap.parse_known_args()
@@ -39,7 +39,7 @@ def colour(prim, part):
     """a --palette match first, then displayColor if authored, else a palette by part name."""
     for key, col in PALETTE:
         if key.lower() in part.lower():
-            return [float(x) for x in col]
+            return None if col is None else [float(x) for x in col]
     try:
         c = UsdGeom.Mesh(prim).GetDisplayColorAttr().Get()
         if c and len(c) and tuple(c[0]) != (0.5, 0.5, 0.5):
@@ -92,7 +92,10 @@ for body in bodies:
         # the part name is the visual's folder under the body (e.g. Rubber_Foot, Left_Arm)
         rel = str(prim.GetPath())[len(str(body.GetPath())):].split("/")
         part = rel[2] if len(rel) > 2 else rel[-1]
-        col = tuple(round(x, 3) for x in colour(prim, part))
+        col = colour(prim, part)
+        if col is None:                                     # palette null: leave the part out
+            continue
+        col = tuple(round(x, 3) for x in col)
         if a.list:
             print(f"[part] {body.GetName():>14s} {part:<45s} {col}", flush=True)
         parts.setdefault(col, []).append((p[:, :3], np.array(tris, dtype=np.int64)))

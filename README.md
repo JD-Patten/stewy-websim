@@ -13,6 +13,7 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
   - **B** walks away from the head, on a time-reversed firmware gait.
   - **C** walks 60° off the head axis, on a steered firmware gait. Mirroring gives it six directions.
 - **Turn in place** either way. Clockwise is the mirror image of counter-clockwise.
+- **Show or hide the head** with the Head checkbox. It's drawn only; the simulated robot's mass doesn't include it.
 - **Change the ground**: hills, bumps and grit sliders. Every policy was trained on flat ground, blind, so this shows how far that carries.
 
 | Input | Action |
@@ -47,6 +48,7 @@ Then open http://localhost:8733.
 - `build_mjcf.py`: `stewy_usd.json` (dumped from the Isaac USD) → `web/stewy.xml` and `web/stewy_meta.json`.
 - `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab, including earlier walkers and turners kept for comparison) → compact `web/policies/` for the policies the page ships (`SHIP`), the manifest, the mesh pack and `web/index.html`.
 - `stewy_usd_meshes.py` (runs in Isaac Lab): the robot's visual meshes from the USD, coloured by part name with `palette.json` (`--palette build/palette.json --out_dir web/meshes`).
+- `build_urdf_parts.py`: parts from the Onshape URDF export that the Isaac USD lacks: the head (shown or hidden by the page's Head checkbox) and the ball bearings. The URDF is in its CAD pose, so each part is placed in a sim body's frame by matching shared geometry (the six top bearings against the plate's hinge anchors, leg by leg). `python build_urdf_parts.py --urdf "<...>/main_assembly"`.
 - `harness.py`: runs any policy in Python MuJoCo with the same servo law and observation path as the page, to measure it outside the browser (`python harness.py walk_smoother`).
 
 ## Credits

@@ -66,6 +66,14 @@ json.dump(manifest, open(os.path.join(WEB, "policies", "manifest.json"), "w"), i
 import base64
 man = json.load(open(os.path.join(WEB, "meshes", "stewy_meshes.json")))
 bin_ = open(os.path.join(WEB, "meshes", "stewy_meshes.bin"), "rb").read()
+# parts from the Onshape URDF (head, ball bearings; build_urdf_parts.py), appended after the USD meshes
+if os.path.exists(os.path.join(WEB, "meshes", "stewy_extra.json")):
+    extra = json.load(open(os.path.join(WEB, "meshes", "stewy_extra.json")))
+    for p in extra:
+        p["vertex_offset"] += len(bin_)
+        p["index_offset"] += len(bin_)
+    man += extra
+    bin_ += open(os.path.join(WEB, "meshes", "stewy_extra.bin"), "rb").read()
 json.dump(dict(pieces=man, data=base64.b64encode(bin_).decode()), open(os.path.join(WEB, "meshes", "stewy_mesh_pack.json"), "w"))
 print(f"mesh pack: {os.path.getsize(os.path.join(WEB, 'meshes', 'stewy_mesh_pack.json'))/1024:.0f} KB")
 
