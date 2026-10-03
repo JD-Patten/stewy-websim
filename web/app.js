@@ -146,6 +146,17 @@ const LEVELS = [
   { label: "Bumps", h: 0, hMax: 20, s: 8, sMin: 3, sMax: 20 },
   { label: "Grit", h: 0, hMax: 6, s: 3, sMin: 2, sMax: 6 },
 ];
+// the desk Stewy starts on: JD's standing-desk frame (black, build_desk.py) with an oak top,
+// 6 ft x 25 in x 1 in, its surface 1.415 m up. Walk off an edge and Stewy falls to the floor
+const DESK = { frame: 1.39, hx: 0.9144, hy: 0.3175, t: 0.0254 };
+DESK.top = DESK.frame + DESK.t;
+// collision for a fallen robot: the feet and arm tips are its only contacts while walking, so a
+// box for the base (6 mm above its underside) and one for the top plate and head stop it sinking
+// into the floor after a fall. Neither touches the ground while walking or turning
+const FALL_GEOMS = {
+  root: '<geom name="fall_base" class="contact" type="box" pos="0 0.0025 0.0255" size="0.038 0.034 0.0195"/>',
+  top_plate: '<geom name="fall_plate" class="contact" type="box" pos="0.0274 0.00735 -0.01715" size="0.0415 0.0355 0.02415"/>',
+};
 function terrainXml(xml) {
   const m = xml.match(/<geom name="floor"[^>]*\/>/);
   if (!m) throw new Error("stewy.xml: no floor geom to replace with terrain");
@@ -153,7 +164,17 @@ function terrainXml(xml) {
     `type="hfield" hfield="terrain" pos="0 0 ${-TER.zmax / 2}"`);
   const asset = `<asset><hfield name="terrain" nrow="${TER.n}" ncol="${TER.n}" ` +
     `size="${TER.half} ${TER.half} ${TER.zmax} 0.01"/></asset>\n  `;
-  return xml.replace(m[0], geom).replace("<worldbody>", asset + "<worldbody>");
+  const desk = `<geom name="desk" type="box" pos="0 0 ${DESK.top - DESK.t / 2}" size="${DESK.hx} ${DESK.hy} ${DESK.t / 2}" ` +
+    'contype="2" conaffinity="1" friction="1 0.005 0.0001"/>';
+  for (const [body, g] of Object.entries(FALL_GEOMS)) {
+    const b = xml.match(new RegExp(`<body name="${body}"[^>]*>`));
+    if (!b) throw new Error(`stewy.xml: no ${body} body`);
+    xml = xml.replace(b[0], b[0] + g);
+  }
+  // a solid plane under the heightfield: a robot falling off the desk lands at ~5 m/s, fast
+  // enough for its small contact spheres to pass through the thin heightfield in one step
+  const backstop = '<geom name="floor_plane" type="plane" size="0 0 1" contype="2" conaffinity="1" friction="1 0.005 0.0001"/>';
+  return xml.replace(m[0], geom + desk + backstop).replace("<worldbody>", asset + "<worldbody>");
 }
 function mulberry32(a) {
   return () => {
@@ -229,7 +250,7 @@ async function main() {
   mujoco.mj_forward(model, data);
 
   const JOINT = 3, BODY = 1, GEOM = 5;
-  const floorId = mujoco.mj_name2id(model, GEOM, "floor");
+  const floorId = mujoco.mj_name2id(model, GEOM, "floor"), planeId = mujoco.mj_name2id(model, GEOM, "floor_plane");
   const jq = meta.servo_joints.map((n) => model.jnt_qposadr[mujoco.mj_name2id(model, JOINT, n)]);
   const jv = meta.servo_joints.map((n) => model.jnt_dofadr[mujoco.mj_name2id(model, JOINT, n)]);
   const physDt = model.opt.timestep;
@@ -383,6 +404,39 @@ async function main() {
   const backdrop = new THREE.Mesh(new THREE.ShapeGeometry(backShape), new THREE.MeshStandardMaterial({ map: backTex, roughness: 1 }));
   backdrop.receiveShadow = true;
   scene.add(terrainMesh, backdrop);
+  // the oak desk top: a canvas wood texture, grain along the 6 ft length
+  const oak = document.createElement("canvas");
+  oak.width = 2048; oak.height = 512;
+  {
+    const g = oak.getContext("2d"), r = mulberry32(42);
+    g.fillStyle = "#c49a63"; g.fillRect(0, 0, oak.width, oak.height);
+    for (let i = 0; i < 260; i++) {                    // long, gently wavy grain lines
+      const y0 = r() * oak.height, amp = 2 + r() * 6, f = 0.002 + r() * 0.004, ph = r() * 6.28;
+      const dark = r() < 0.7;
+      g.strokeStyle = dark ? `rgba(120, 78, 38, ${0.10 + r() * 0.22})` : `rgba(230, 196, 140, ${0.10 + r() * 0.2})`;
+      g.lineWidth = 0.6 + r() * 2.4;
+      g.beginPath();
+      for (let x = 0; x <= oak.width; x += 16) {
+        const y = y0 + amp * Math.sin(x * f + ph) + 3 * Math.sin(x * f * 3.1 + ph * 2);
+        x ? g.lineTo(x, y) : g.moveTo(x, y);
+      }
+      g.stroke();
+    }
+    for (let i = 0; i < 1400; i++) {                   // oak's short flecks (medullary rays)
+      g.fillStyle = `rgba(105, 68, 32, ${0.08 + r() * 0.15})`;
+      g.fillRect(r() * oak.width, r() * oak.height, 4 + r() * 18, 0.8 + r() * 1.2);
+    }
+  }
+  const oakTex = new THREE.CanvasTexture(oak);
+  oakTex.encoding = THREE.sRGBEncoding;
+  oakTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const oakSide = new THREE.MeshStandardMaterial({ color: new THREE.Color("#a97c47").convertSRGBToLinear(), roughness: 0.7 });
+  const oakTop = new THREE.MeshStandardMaterial({ map: oakTex, roughness: 0.55 });
+  const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2 * DESK.hx, 2 * DESK.hy, DESK.t),
+    [oakSide, oakSide, oakSide, oakSide, oakTop, oakSide]);
+  deskTop.position.set(0, 0, DESK.top - DESK.t / 2);
+  deskTop.castShadow = deskTop.receiveShadow = true;
+  scene.add(deskTop);
   function drawGrid(bg, minor, major) {
     const g = gridCanvas.getContext("2d"), s = gridCanvas.width;
     g.fillStyle = bg; g.fillRect(0, 0, s, s);
@@ -411,9 +465,9 @@ async function main() {
     const t = Math.min(1, Math.max(0, e / TER.taper));
     return t * t * (3 - 2 * t);
   }
-  const groundAt = (x, y) => (flat() ? 0 : groundRaw(x, y) * taper(x, y));
-  function footprintTop(x, y) {                        // highest ground within 9 cm of (x, y)
-    if (flat()) return 0;
+  const onDesk = (x, y) => Math.abs(x) <= DESK.hx && Math.abs(y) <= DESK.hy;
+  const groundAt = (x, y) => (onDesk(x, y) ? DESK.top : flat() ? 0 : groundRaw(x, y) * taper(x, y));
+  function footprintTop(x, y) {                        // highest ground (or desk) within 9 cm of (x, y)
     let top = -Infinity;
     for (let i = -8; i <= 8; i++) for (let j = -8; j <= 8; j++) {
       if (i * i + j * j <= 64) top = Math.max(top, groundAt(x + i * 0.011, y + j * 0.011));
@@ -433,10 +487,22 @@ async function main() {
     }
     terrainGeo.attributes.position.needsUpdate = true;
     terrainGeo.computeVertexNormals();
+    placeBackstop();
   }
   // move the heightfield (and its mesh) to be centred near (x, y), then refill it. A static
   // geom's world position is only recomputed by mj_setConst, which also overwrites the state,
   // so the state is saved around it
+  function setConstKeepState() {
+    const keep = { qpos: Float64Array.from(data.qpos), qvel: Float64Array.from(data.qvel),
+      warm: Float64Array.from(data.qacc_warmstart), ctrl: Float64Array.from(data.ctrl), time: data.time };
+    mujoco.mj_setConst(model, data);
+    data.qpos.set(keep.qpos); data.qvel.set(keep.qvel); data.qacc_warmstart.set(keep.warm);
+    data.ctrl.set(keep.ctrl); data.time = keep.time;
+  }
+  function placeBackstop() {                           // the solid plane: at the floor, or below the lowest hill
+    const z = flat() ? 0 : -TER.zmax / 2;
+    if (model.geom_pos[3 * planeId + 2] !== z) { model.geom_pos[3 * planeId + 2] = z; setConstKeepState(); }
+  }
   function moveTerrain(x, y) {
     const nx = Math.round(x / TER.cell) * TER.cell, ny = Math.round(y / TER.cell) * TER.cell;
     const moved = nx !== tc[0] || ny !== tc[1];
@@ -444,11 +510,7 @@ async function main() {
     if (moved) {
       const gp = model.geom_pos;
       gp[3 * floorId] = nx; gp[3 * floorId + 1] = ny;
-      const keep = { qpos: Float64Array.from(data.qpos), qvel: Float64Array.from(data.qvel),
-        warm: Float64Array.from(data.qacc_warmstart), ctrl: Float64Array.from(data.ctrl), time: data.time };
-      mujoco.mj_setConst(model, data);
-      data.qpos.set(keep.qpos); data.qvel.set(keep.qvel); data.qacc_warmstart.set(keep.warm);
-      data.ctrl.set(keep.ctrl); data.time = keep.time;
+      setConstKeepState();
     }
     fillTerrain();
     mujoco.mj_forward(model, data);
@@ -537,7 +599,7 @@ async function main() {
   resize();
 
   const q3 = new THREE.Quaternion();
-  let lastRoot = null;
+  let lastRoot = new THREE.Vector3(0, 0, 0.0033);     // the camera was placed for a robot on the floor
   function draw() {
     const xp = data.xpos, xq = data.xquat;
     for (const grp of groups.values()) {
@@ -546,12 +608,12 @@ async function main() {
       grp.quaternion.set(xq[4 * id + 1], xq[4 * id + 2], xq[4 * id + 3], xq[4 * id]);
     }
     const q = data.qpos;
-    const root = new THREE.Vector3(q[0], q[1], 0.05);
+    const root = new THREE.Vector3(q[0], q[1], q[2]);   // the camera follows the robot's height too
     if ($("#sel-cam").value === "follow") {
       if (lastRoot) { const d = root.clone().sub(lastRoot); camera.position.add(d); controls.target.add(d); }
     }
     lastRoot = root;
-    sun.position.set(q[0] + 0.4, q[1] - 0.3, 0.9); sun.target.position.set(q[0], q[1], 0);
+    sun.position.set(q[0] + 0.4, q[1] - 0.3, q[2] + 0.9); sun.target.position.set(q[0], q[1], q[2]);
     trailGeo.setDrawRange(0, trail.count);
     trailGeo.attributes.position.needsUpdate = true;
     if (mode.kind === "walk") {

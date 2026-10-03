@@ -1,0 +1,14 @@
+[
+ {
+  "body": "world",
+  "color": [
+   0.06,
+   0.06,
+   0.065
+  ],
+  "vertex_offset": 0,
+  "vertex_count": 2360,
+  "index_offset": 28320,
+  "index_count": 14784
+ }
+]

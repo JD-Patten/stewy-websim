@@ -14,6 +14,7 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
   - **C** walks 60° off the head axis, on a steered firmware gait. Mirroring gives it six directions.
 - **Turn in place** either way. Clockwise is the mirror image of counter-clockwise.
 - **Show or hide the head** with the Head checkbox. It's drawn only; the simulated robot's mass doesn't include it.
+- **Walk off the desk.** Stewy starts on an oak desk top (6 ft × 25 in × 1 in) on a standing-desk frame, 1.42 m up. Walk off any edge and it falls to the floor; Reset puts it back on the desk.
 - **Change the ground**: hills, bumps and grit sliders. Every policy was trained on flat ground, blind, so this shows how far that carries.
 
 | Input | Action |
@@ -49,6 +50,7 @@ Then open http://localhost:8733.
 - `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab, including earlier walkers and turners kept for comparison) → compact `web/policies/` for the policies the page ships (`SHIP`), the manifest, the mesh pack and `web/index.html`.
 - `stewy_usd_meshes.py` (runs in Isaac Lab): the robot's visual meshes from the USD, coloured by part name with `palette.json` (`--palette build/palette.json --out_dir web/meshes`).
 - `build_urdf_parts.py`: parts from the Onshape URDF export that the Isaac USD lacks: the head (shown or hidden by the page's Head checkbox) and the ball bearings. The URDF is in its CAD pose, so each part is placed in a sim body's frame by matching shared geometry (the six top bearings against the plate's hinge anchors, leg by leg). `python build_urdf_parts.py --urdf "<...>/main_assembly"`.
+- `build_desk.py`: the desk frame (`desk_base.stl`, an Onshape export) as a black mesh; the oak top, its collision box and the fall-collision boxes on the robot are added by the page (`DESK`, `FALL_GEOMS` in `app.js`).
 - `harness.py`: runs any policy in Python MuJoCo with the same servo law and observation path as the page, to measure it outside the browser (`python harness.py walk_smoother`).
 
 ## Credits

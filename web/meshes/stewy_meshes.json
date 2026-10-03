@@ -50,14 +50,26 @@
  {
   "body": "leg_rod",
   "color": [
+   0.22,
+   0.23,
+   0.24
+  ],
+  "vertex_offset": 187332,
+  "vertex_count": 132,
+  "index_offset": 188916,
+  "index_count": 792
+ },
+ {
+  "body": "leg_rod",
+  "color": [
    0.05,
    0.05,
    0.055
   ],
-  "vertex_offset": 187332,
-  "vertex_count": 180,
-  "index_offset": 189492,
-  "index_count": 1176
+  "vertex_offset": 192084,
+  "vertex_count": 64,
+  "index_offset": 192852,
+  "index_count": 384
  },
  {
   "body": "tang_m3",
@@ -66,21 +78,21 @@
    0.5,
    0.2
   ],
-  "vertex_offset": 194196,
+  "vertex_offset": 194388,
   "vertex_count": 97,
-  "index_offset": 195360,
+  "index_offset": 195552,
   "index_count": 582
  },
  {
   "body": "top_plate",
   "color": [
-   0.05,
-   0.05,
-   0.055
+   0.22,
+   0.23,
+   0.24
   ],
-  "vertex_offset": 197688,
+  "vertex_offset": 197880,
   "vertex_count": 1048,
-  "index_offset": 210264,
+  "index_offset": 210456,
   "index_count": 6384
  },
  {
@@ -90,9 +102,9 @@
    0.784,
    0.831
   ],
-  "vertex_offset": 235800,
+  "vertex_offset": 235992,
   "vertex_count": 428,
-  "index_offset": 240936,
+  "index_offset": 241128,
   "index_count": 2586
  },
  {
@@ -102,10 +114,22 @@
    0.78,
    0.81
   ],
-  "vertex_offset": 251280,
+  "vertex_offset": 251472,
   "vertex_count": 316,
-  "index_offset": 255072,
+  "index_offset": 255264,
   "index_count": 1956
+ },
+ {
+  "body": "leg_rod_1",
+  "color": [
+   0.22,
+   0.23,
+   0.24
+  ],
+  "vertex_offset": 263088,
+  "vertex_count": 132,
+  "index_offset": 264672,
+  "index_count": 792
  },
  {
   "body": "leg_rod_1",
@@ -114,10 +138,10 @@
    0.05,
    0.055
   ],
-  "vertex_offset": 262896,
-  "vertex_count": 180,
-  "index_offset": 265056,
-  "index_count": 1176
+  "vertex_offset": 267840,
+  "vertex_count": 64,
+  "index_offset": 268608,
+  "index_count": 384
  },
  {
   "body": "tang_m3_1",
@@ -126,9 +150,9 @@
    0.5,
    0.2
   ],
-  "vertex_offset": 269760,
+  "vertex_offset": 270144,
   "vertex_count": 97,
-  "index_offset": 270924,
+  "index_offset": 271308,
   "index_count": 582
  },
  {
@@ -138,9 +162,9 @@
    0.784,
    0.831
   ],
-  "vertex_offset": 273252,
+  "vertex_offset": 273636,
   "vertex_count": 428,
-  "index_offset": 278388,
+  "index_offset": 278772,
   "index_count": 2586
  },
  {
@@ -150,10 +174,22 @@
    0.78,
    0.81
   ],
-  "vertex_offset": 288732,
+  "vertex_offset": 289116,
   "vertex_count": 316,
-  "index_offset": 292524,
+  "index_offset": 292908,
   "index_count": 1956
+ },
+ {
+  "body": "leg_rod_5",
+  "color": [
+   0.22,
+   0.23,
+   0.24
+  ],
+  "vertex_offset": 300732,
+  "vertex_count": 132,
+  "index_offset": 302316,
+  "index_count": 792
  },
  {
   "body": "leg_rod_5",
@@ -162,10 +198,10 @@
    0.05,
    0.055
   ],
-  "vertex_offset": 300348,
-  "vertex_count": 180,
-  "index_offset": 302508,
-  "index_count": 1176
+  "vertex_offset": 305484,
+  "vertex_count": 64,
+  "index_offset": 306252,
+  "index_count": 384
  },
  {
   "body": "tang_m3_5",
@@ -174,9 +210,9 @@
    0.5,
    0.2
   ],
-  "vertex_offset": 307212,
+  "vertex_offset": 307788,
   "vertex_count": 97,
-  "index_offset": 308376,
+  "index_offset": 308952,
   "index_count": 582
  },
  {
@@ -186,9 +222,9 @@
    0.784,
    0.831
   ],
-  "vertex_offset": 310704,
+  "vertex_offset": 311280,
   "vertex_count": 431,
-  "index_offset": 315876,
+  "index_offset": 316452,
   "index_count": 2598
  },
  {
@@ -198,10 +234,22 @@
    0.78,
    0.81
   ],
-  "vertex_offset": 326268,
+  "vertex_offset": 326844,
   "vertex_count": 316,
-  "index_offset": 330060,
+  "index_offset": 330636,
   "index_count": 1956
+ },
+ {
+  "body": "leg_rod_2",
+  "color": [
+   0.22,
+   0.23,
+   0.24
+  ],
+  "vertex_offset": 338460,
+  "vertex_count": 132,
+  "index_offset": 340044,
+  "index_count": 792
  },
  {
   "body": "leg_rod_2",
@@ -210,10 +258,10 @@
    0.05,
    0.055
   ],
-  "vertex_offset": 337884,
-  "vertex_count": 180,
-  "index_offset": 340044,
-  "index_count": 1176
+  "vertex_offset": 343212,
+  "vertex_count": 64,
+  "index_offset": 343980,
+  "index_count": 384
  },
  {
   "body": "tang_m3_2",
@@ -222,9 +270,9 @@
    0.5,
    0.2
   ],
-  "vertex_offset": 344748,
+  "vertex_offset": 345516,
   "vertex_count": 97,
-  "index_offset": 345912,
+  "index_offset": 346680,
   "index_count": 582
  },
  {
@@ -234,9 +282,9 @@
    0.784,
    0.831
   ],
-  "vertex_offset": 348240,
+  "vertex_offset": 349008,
   "vertex_count": 431,
-  "index_offset": 353412,
+  "index_offset": 354180,
   "index_count": 2598
  },
  {
@@ -246,10 +294,22 @@
    0.78,
    0.81
   ],
-  "vertex_offset": 363804,
+  "vertex_offset": 364572,
   "vertex_count": 316,
-  "index_offset": 367596,
+  "index_offset": 368364,
   "index_count": 1956
+ },
+ {
+  "body": "leg_rod_3",
+  "color": [
+   0.22,
+   0.23,
+   0.24
+  ],
+  "vertex_offset": 376188,
+  "vertex_count": 132,
+  "index_offset": 377772,
+  "index_count": 792
  },
  {
   "body": "leg_rod_3",
@@ -258,10 +318,10 @@
    0.05,
    0.055
   ],
-  "vertex_offset": 375420,
-  "vertex_count": 180,
-  "index_offset": 377580,
-  "index_count": 1176
+  "vertex_offset": 380940,
+  "vertex_count": 64,
+  "index_offset": 381708,
+  "index_count": 384
  },
  {
   "body": "tang_m3_3",
@@ -270,9 +330,9 @@
    0.5,
    0.2
   ],
-  "vertex_offset": 382284,
+  "vertex_offset": 383244,
   "vertex_count": 97,
-  "index_offset": 383448,
+  "index_offset": 384408,
   "index_count": 582
  },
  {
@@ -282,9 +342,9 @@
    0.784,
    0.831
   ],
-  "vertex_offset": 385776,
+  "vertex_offset": 386736,
   "vertex_count": 431,
-  "index_offset": 390948,
+  "index_offset": 391908,
   "index_count": 2598
  },
  {
@@ -294,10 +354,22 @@
    0.78,
    0.81
   ],
-  "vertex_offset": 401340,
+  "vertex_offset": 402300,
   "vertex_count": 316,
-  "index_offset": 405132,
+  "index_offset": 406092,
   "index_count": 1956
+ },
+ {
+  "body": "leg_rod_4",
+  "color": [
+   0.22,
+   0.23,
+   0.24
+  ],
+  "vertex_offset": 413916,
+  "vertex_count": 132,
+  "index_offset": 415500,
+  "index_count": 792
  },
  {
   "body": "leg_rod_4",
@@ -306,10 +378,10 @@
    0.05,
    0.055
   ],
-  "vertex_offset": 412956,
-  "vertex_count": 180,
-  "index_offset": 415116,
-  "index_count": 1176
+  "vertex_offset": 418668,
+  "vertex_count": 64,
+  "index_offset": 419436,
+  "index_count": 384
  },
  {
   "body": "tang_m3_4",
@@ -318,9 +390,9 @@
    0.5,
    0.2
   ],
-  "vertex_offset": 419820,
+  "vertex_offset": 420972,
   "vertex_count": 97,
-  "index_offset": 420984,
+  "index_offset": 422136,
   "index_count": 582
  }
 ]
