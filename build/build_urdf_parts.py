@@ -45,6 +45,42 @@ SKIP_LINKS = ("cable",)
 # the HC-SR04 sensor (the platine_step link and everything on it): all silver and never simplified
 BOLTS = ("Socket_button_head_screw", "M3_Lock_Nut", "_8mm_M3_Stud")
 DEFAULT_COL = {}
+HC_GREY = [0.55, 0.57, 0.6]                          # the HC-SR04: a darker silver
+# the base board (Arduino Nano ESP32 form factor) coloured to match a photo of it: black board
+# and chips, gold pads and header pins, silver USB-C, chip legs and button, red "C3" label
+NANO = dict(board=[0.118, 0.118, 0.129], gold=[0.8, 0.71, 0.49], plastic=[0.09, 0.09, 0.095],
+            chip=[0.13, 0.13, 0.15], legs=[0.66, 0.63, 0.61], metal=[0.66, 0.624, 0.608], cap=[0.93, 0.93, 0.9],
+            label=[0.796, 0.227, 0.186])                # measured from the photo (median of each colour)
+
+
+def esp32_colour(t, raw):
+    """classify a part of the base ESP32 board by its size (mm), as the CAD gives them no colours"""
+    p = t.reshape(-1, 3)
+    e = sorted(np.round((p.max(0) - p.min(0)) * 1000, 1))
+    big, mid, small = e[2], e[1], e[0]
+    if big > 40:
+        return NANO["board"]
+    if big > 30:
+        return NANO["plastic"]                       # header strips
+    if big > 10:
+        return NANO["gold"]                          # header pins
+    if abs(big - 2.2) < 0.1 and abs(mid - 1.8) < 0.1:
+        return NANO["gold"]                          # castellated pads
+    if big > 9:
+        return NANO["chip"]                          # ESP32 module chip
+    if big > 8:
+        return NANO["metal"]                         # USB-C
+    if abs(big - 5.4) < 0.1:
+        return NANO["label"]
+    if abs(big - 5.2) < 0.1:
+        return NANO["chip"]                          # flash
+    if abs(big - 4.0) < 0.1:
+        return NANO["metal"]                         # RST button body
+    if abs(big - 2.8) < 0.1:
+        return NANO["cap"]                           # RST button cap
+    if abs(big - 2.0) < 0.1 and small < 0.7:
+        return NANO["legs"]                          # flash legs
+    return NANO["metal"]
 
 
 def T(o):
@@ -109,7 +145,7 @@ def visuals(l):
         t = stl(os.path.join(a.urdf, "meshes", name + ".stl")) * s
         c = v.find("material/color")
         out.append((name if name.startswith("JST_XH_B2B") else re.sub(r"(_\d+)+$", "", name), t @ M[:3, :3].T + M[:3, 3],
-                    [float(x) for x in c.get("rgba").split()[:3]] if c is not None else None))
+                    [float(x) for x in c.get("rgba").split()[:3]] if c is not None else None, name))
     return out
 
 
@@ -127,8 +163,8 @@ ARMS = sorted(set(LEG_ARM))
 ARM_ANCHOR = {n: np.array([(1 if n.startswith("left") else -1) * 0.04975042, 0.000931254, 0.004000013]) for n in ARMS}
 
 every = [(l, *v) for l in links for v in visuals(l)]
-balls = {l: centre(t) for l, n, t, _ in every if n == "Tapped_Ball_Bearing"}
-tops = [centre(t) for _, n, t, _ in every if n == "Bearing"]
+balls = {l: centre(t) for l, n, t, *_ in every if n == "Tapped_Ball_Bearing"}
+tops = [centre(t) for _, n, t, *_ in every if n == "Bearing"]
 
 # top plate: Kabsch fit URDF world -> sim plate frame from the six legs
 pi = m.body("top_plate").id
@@ -173,13 +209,14 @@ plate_set = set(sub("top_plate"))
 hc_links = set(sub("platine_step"))
 USD_HAS = ("Left_Arm", "Right_Arm", "Base_top_half", "Base_bottom_half", "Rubber_Foot", "servo_motor", "Top_Plate")
 pieces = collections.defaultdict(list)          # (body, colour, group, simplify) -> [triangles]
-for l, name, t, rgb in every:
+for l, name, t, rgb, raw in every:
     if name.startswith(SKIP_PARTS) or any(k in l for k in SKIP_LINKS) or name.startswith(USD_HAS):
         continue
     hc = l in hc_links
-    col = (SILVER if hc or name.startswith(BOLTS) or name == "Bearing" or name == "Tapped_Ball_Bearing" else
+    col = (HC_GREY if hc else esp32_colour(t, raw) if l == "part_1_13" else SILVER if name.startswith(BOLTS) or name == "Bearing" or name == "Tapped_Ball_Bearing" else
            LIGHT_BLUE if any(k in name for k in PRINTED) else WHITE if name == "Servo_Horn" else (rgb or [0.6, 0.6, 0.6]))
-    key = lambda body, group="": (body, tuple(round(c, 3) for c in col), group, not hc)
+    exact = hc or l == "part_1_13"                   # the HC-SR04 and the ESP32 board keep full CAD detail
+    key = lambda body, group="": (body, tuple(round(c, 3) for c in col), group, not exact)
     if l in arm_of:                                  # arm ball, servo horn and its screw, stud
         M = arm_T[arm_of[l]]
         pieces[key(arm_of[l])].append(t @ M[:3, :3].T + M[:3, 3])
