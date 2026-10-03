@@ -1,0 +1,41 @@
+{
+ "servo_joints": [
+  "servo_revolute_left_arm",
+  "servo_revolute_left_arm_1",
+  "servo_revolute_right_arm",
+  "servo_revolute_right_arm_1",
+  "servo_revolute_right_arm_2",
+  "servo_revolute_left_arm_2"
+ ],
+ "spawn_lift": 0.003277540241368115,
+ "body_order": [
+  "root",
+  "left_arm",
+  "left_arm_1",
+  "left_arm_2",
+  "right_arm",
+  "right_arm_1",
+  "right_arm_2",
+  "leg_rod",
+  "tang_m3",
+  "top_plate",
+  "tang_m3_1",
+  "tang_m3_2",
+  "tang_m3_3",
+  "tang_m3_4",
+  "tang_m3_5",
+  "leg_rod_1",
+  "leg_rod_2",
+  "leg_rod_3",
+  "leg_rod_4",
+  "leg_rod_5"
+ ],
+ "loops": [
+  "ball_leg1",
+  "ball_leg2",
+  "ball_leg3",
+  "ball_leg4",
+  "ball_leg5"
+ ],
+ "total_mass": 0.24299999722279608
+}

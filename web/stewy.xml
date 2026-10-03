@@ -1,0 +1,142 @@
+<mujoco model="stewy">
+  <compiler angle="radian" inertiafromgeom="false" autolimits="true"/>
+  <option timestep="0.002" integrator="implicitfast" gravity="0 0 -9.81" cone="pyramidal"/>
+  <visual><headlight ambient="0.4 0.4 0.4"/></visual>
+  <default>
+    <geom contype="0" conaffinity="0"/>
+    <default class="contact"><geom contype="1" conaffinity="2" condim="3" priority="1" solref="0.004 1"
+      rgba="0.9 0.4 0.2 1"/></default>
+    <default class="stick"><geom size="0.0025" rgba="0.6 0.65 0.7 1" group="1"/></default>
+  </default>
+  <worldbody>
+    <light pos="0 0 1" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="2 2 0.01" contype="2" conaffinity="1" friction="1 0.005 0.0001"
+      rgba="0.8 0.8 0.8 1"/>
+    <body name="root" pos="0 0 0.00327754" quat="1 0 0 0">
+      <inertial pos="9.895712e-10 6.372627e-05 0.02260736" quat="0.9999907 0.004334128 8.800773e-09 -2.030556e-06" mass="0.1689299" diaginertia="0.0001090603 0.0001095408 0.0001324949"/>
+      <freejoint name="root"/>
+      <geom name="root_foot0" class="contact" type="sphere" pos="-0.0319276 -0.00532511 0.00122246" size="0.004" friction="0.51 0.005 0.0001"/>
+      <geom name="root_foot1" class="contact" type="sphere" pos="-0.0113244 0.0303606 0.00122246" size="0.004" friction="0.51 0.005 0.0001"/>
+      <geom name="root_foot2" class="contact" type="sphere" pos="0.031921 -0.00532511 0.00122246" size="0.004" friction="0.51 0.005 0.0001"/>
+      <geom name="root_foot3" class="contact" type="sphere" pos="-0.0206064 -0.0249339 0.00122246" size="0.004" friction="0.51 0.005 0.0001"/>
+      <geom name="root_foot4" class="contact" type="sphere" pos="0.0113179 0.0303606 0.00122246" size="0.004" friction="0.51 0.005 0.0001"/>
+      <geom name="root_foot5" class="contact" type="sphere" pos="0.0205999 -0.0249339 0.00122246" size="0.004" friction="0.51 0.005 0.0001"/>
+      <geom class="stick" type="capsule" fromto="9.895712e-10 6.372627e-05 0.02260736 -0.03273774 -0.02781822 0.02088458"/>
+      <geom class="stick" type="capsule" fromto="9.895712e-10 6.372627e-05 0.02260736 0.04048457 -0.01438895 0.02088458"/>
+      <geom class="stick" type="capsule" fromto="9.895712e-10 6.372627e-05 0.02260736 -0.007756632 0.0423088 0.02088458"/>
+      <geom class="stick" type="capsule" fromto="9.895712e-10 6.372627e-05 0.02260736 0.007749918 0.04230884 0.02088458"/>
+      <geom class="stick" type="capsule" fromto="9.895712e-10 6.372627e-05 0.02260736 -0.04049108 -0.01438914 0.02088458"/>
+      <geom class="stick" type="capsule" fromto="9.895712e-10 6.372627e-05 0.02260736 0.03273131 -0.02781807 0.02088458"/>
+      <body name="left_arm" pos="-0.03273774 -0.02781822 0.02088458" quat="0.6874431 0.5269129 -0.3048849 -0.3960176">
+        <inertial pos="0.0344266 -0.001797094 0.003987836" quat="0.999924 -0.0006647862 -0.0008847926 -0.01228697" mass="0.0055741" diaginertia="1.06851e-07 2.167643e-06 2.229994e-06"/>
+        <joint name="servo_revolute_left_arm" type="hinge" pos="0 0 0" axis="0 0 1" armature="0.000163167" range="-1.5707 1.5707" limited="true"/>
+        <geom name="left_arm_arm0" class="contact" type="sphere" pos="0.05156 -0.00562 0.004" size="0.006" friction="0.28 0.005 0.0001"/>
+        <geom class="stick" type="capsule" fromto="0 0 0 0.04975042 0.000931254 0.004000013"/>
+        <body name="leg_rod" pos="0.04975042 0.0009312541 0.00400001" quat="0.5010559 -0.643893 0.2262654 0.5321173">
+          <inertial pos="-8.573518e-06 1.3315e-07 0.05567341" quat="1 -1.331188e-06 -0.0001511893 -2.16475e-05" mass="0.003368392" diaginertia="4.536875e-06 4.538086e-06 1.66676e-08"/>
+          <joint name="ball_leg0" type="ball" pos="-2.192871e-09 -2.361493e-09 -5.313245e-10" damping="1e-6"/>
+          <geom class="stick" type="capsule" fromto="-2.192871e-09 -2.361493e-09 -5.313245e-10 -4.670181e-08 2.589908e-07 0.1030047"/>
+          <body name="tang_m3" pos="-4.938871e-08 2.977593e-07 0.1030048" quat="0.6844032 0.1777545 -0.1777584 0.6843957">
+            <inertial pos="4.93424e-20 -5.89405e-21 0.00641644" quat="1 0 0 0" mass="0.00122525" diaginertia="2.51446e-08 2.55222e-08 1.91867e-09"/>
+            <joint name="ujoint_leg0_clevis" type="hinge" pos="0 0 0" axis="0 -1 0" damping="1e-6"/>
+            <geom class="stick" type="capsule" fromto="0 0 0 -3.46945e-18 2.08167e-17 0.0073"/>
+            <body name="top_plate" pos="-5.38963e-09 -5.836864e-09 0.0103" quat="-1.187727e-06 0.9370307 -0.3492471 4.425938e-07">
+              <inertial pos="0.03 0.0057735 0.00191077" quat="1 0 0 0" mass="0.01306367" diaginertia="3.77205e-06 3.77205e-06 7.48633e-06"/>
+              <joint name="plate_rev_leg0" type="hinge" pos="4.522726e-10 -3.116881e-11 0.003000001" axis="1.001495e-10 8.599071e-11 -1" damping="1e-6"/>
+              <geom class="stick" type="capsule" fromto="4.522726e-10 -3.116881e-11 0.003000001 0.04000133 0.03464144 0.00300062"/>
+              <geom class="stick" type="capsule" fromto="4.522726e-10 -3.116881e-11 0.003000001 0.06000166 -2.5106e-07 0.003000334"/>
+              <geom class="stick" type="capsule" fromto="4.522726e-10 -3.116881e-11 0.003000001 0.009999879 -0.01732063 0.003000011"/>
+              <geom class="stick" type="capsule" fromto="4.522726e-10 -3.116881e-11 0.003000001 0.02000081 0.03464214 0.002999975"/>
+              <geom class="stick" type="capsule" fromto="4.522726e-10 -3.116881e-11 0.003000001 0.05000097 -0.01732156 0.003000191"/>
+              <body name="tang_m3_1" pos="0.04000125 0.03464134 0.01030062" quat="5.771269e-06 -0.9861061 -0.1661167 -6.832524e-06">
+                <inertial pos="4.93424e-20 -5.89405e-21 0.00641644" quat="1 0 0 0" mass="0.00122525" diaginertia="2.51446e-08 2.55222e-08 1.91867e-09"/>
+                <joint name="plate_rev_leg1" type="hinge" pos="3.46945e-18 -1.73472e-17 0.0073" axis="2.395262e-06 8.30583e-07 1" damping="1e-6"/>
+                <geom class="stick" type="capsule" fromto="3.46945e-18 -1.73472e-17 0.0073 0 0 0"/>
+                <body name="leg_rod_1" pos="0.05095709 2.171933e-07 -0.08951731" quat="0.6835704 0.1809275 -0.1809268 -0.6835658">
+                  <inertial pos="-8.573519e-06 -1.329763e-07 0.05567341" quat="1 1.334527e-06 -0.0001511893 -1.9e-05" mass="0.003368392" diaginertia="4.536875e-06 4.538086e-06 1.66676e-08"/>
+                  <joint name="ujoint_leg1_clevis" type="hinge" pos="-4.670318e-08 -2.589902e-07 0.1030047" axis="1 -6.276371e-06 2.642192e-06" damping="1e-6"/>
+                </body>
+              </body>
+              <body name="tang_m3_2" pos="0.0600015 -3.127826e-07 0.01030034" quat="1.180261e-05 -0.3387564 0.9408741 2.647946e-07">
+                <inertial pos="4.93424e-20 -5.89405e-21 0.00641644" quat="1 0 0 0" mass="0.00122525" diaginertia="2.51446e-08 2.55222e-08 1.91867e-09"/>
+                <joint name="plate_rev_leg2" type="hinge" pos="-3.46945e-17 -1.04083e-17 0.0073" axis="-1.953305e-06 -1.61609e-06 1" damping="1e-6"/>
+                <geom class="stick" type="capsule" fromto="-3.46945e-17 -1.04083e-17 0.0073 0 0 0"/>
+                <body name="leg_rod_2" pos="-0.05070135 -2.186806e-07 -0.08966244" quat="0.6838257 -0.1799538 0.1799522 -0.6838247">
+                  <inertial pos="-8.558777e-06 -1.329764e-07 0.05567341" quat="1 1.334524e-06 -0.0001509433 -1.899999e-05" mass="0.003368392" diaginertia="4.536875e-06 4.538086e-06 1.666759e-08"/>
+                  <joint name="ujoint_leg2_clevis" type="hinge" pos="4.670318e-08 -2.589905e-07 0.1030047" axis="0.9999999 -9.64279e-07 -2.628963e-06" damping="1e-6"/>
+                </body>
+              </body>
+              <body name="tang_m3_3" pos="0.009999788 -0.01732065 0.01030001" quat="5.340635e-06 -0.7692645 0.6389304 -3.677287e-06">
+                <inertial pos="4.93424e-20 -5.89405e-21 0.00641644" quat="1 0 0 0" mass="0.00122525" diaginertia="2.51446e-08 2.55222e-08 1.91867e-09"/>
+                <joint name="plate_rev_leg3" type="hinge" pos="0 -6.93889e-18 0.0073" axis="-4.653137e-07 2.492113e-06 1" damping="1e-6"/>
+                <geom class="stick" type="capsule" fromto="0 -6.93889e-18 0.0073 0 0 0"/>
+                <body name="leg_rod_3" pos="0.05051561 -2.283951e-07 -0.08976721" quat="0.6840135 0.1792418 -0.1792448 -0.6840097">
+                  <inertial pos="-8.558777e-06 -1.32931e-07 0.05567341" quat="1 1.334123e-06 -0.0001509433 -2.165272e-05" mass="0.003368392" diaginertia="4.536875e-06 4.538086e-06 1.666759e-08"/>
+                  <joint name="ujoint_leg3_clevis" type="hinge" pos="4.670181e-08 -2.589908e-07 0.1030047" axis="1 -6.357825e-06 -2.647371e-06" damping="1e-6"/>
+                </body>
+              </body>
+              <body name="tang_m3_4" pos="0.02000076 0.034642 0.01029997" quat="1.823811e-06 0.174814 0.9846015 1.014935e-05">
+                <inertial pos="4.93424e-20 -5.89405e-21 0.00641644" quat="1 0 0 0" mass="0.00122525" diaginertia="2.51446e-08 2.55222e-08 1.91867e-09"/>
+                <joint name="plate_rev_leg4" type="hinge" pos="0 1.38778e-17 0.0073" axis="-2.380238e-06 8.727042e-07 1" damping="1e-6"/>
+                <geom class="stick" type="capsule" fromto="0 1.38778e-17 0.0073 0 0 0"/>
+                <body name="leg_rod_4" pos="0.04990675 2.358776e-07 -0.09010708" quat="0.6846127 0.1769301 -0.1769274 -0.6846151">
+                  <inertial pos="-8.57352e-06 1.33059e-07 0.05567341" quat="1 -1.330385e-06 -0.0001511893 -1.634203e-05" mass="0.003368392" diaginertia="4.536875e-06 4.538086e-06 1.66676e-08"/>
+                  <joint name="ujoint_leg4_clevis" type="hinge" pos="-4.670456e-08 2.589903e-07 0.1030047" axis="1 4.339928e-06 2.643889e-06" damping="1e-6"/>
+                </body>
+              </body>
+              <body name="tang_m3_5" pos="0.05000085 -0.01732155 0.01030019" quat="5.562651e-06 -0.6425439 0.7662489 -5.63844e-06">
+                <inertial pos="4.93424e-20 -5.89405e-21 0.00641644" quat="1 0 0 0" mass="0.00122525" diaginertia="2.51446e-08 2.55222e-08 1.91867e-09"/>
+                <joint name="plate_rev_leg5" type="hinge" pos="-3.46945e-18 1.38778e-17 0.0073" axis="2.496393e-06 -4.417796e-07 1" damping="1e-6"/>
+                <geom class="stick" type="capsule" fromto="-3.46945e-18 1.38778e-17 0.0073 0 0 0"/>
+                <body name="leg_rod_5" pos="0.05051635 -2.228242e-07 -0.08976677" quat="0.6840105 0.1792469 -0.1792489 -0.6840102">
+                  <inertial pos="-8.558777e-06 1.331045e-07 0.05567341" quat="1 -1.330791e-06 -0.0001509433 -1.899476e-05" mass="0.003368392" diaginertia="4.536875e-06 4.538086e-06 1.666759e-08"/>
+                  <joint name="ujoint_leg5_clevis" type="hinge" pos="4.670318e-08 2.589902e-07 0.1030047" axis="1 -1.04199e-06 -2.646131e-06" damping="1e-6"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="left_arm_1" pos="0.04048457 -0.01438895 0.02088458" quat="0.6860989 0.5279413 0.3031007 0.398342">
+        <inertial pos="0.0344266 -0.001797094 0.003987836" quat="0.999924 -0.0006647862 -0.0008847926 -0.01228697" mass="0.0055741" diaginertia="1.06851e-07 2.167643e-06 2.229994e-06"/>
+        <joint name="servo_revolute_left_arm_1" type="hinge" pos="0 0 0" axis="0 0 1" armature="0.000163167" range="-1.5707 1.5707" limited="true"/>
+        <geom name="left_arm_1_arm0" class="contact" type="sphere" pos="0.05156 -0.00562 0.004" size="0.006" friction="0.28 0.005 0.0001"/>
+      </body>
+      <body name="left_arm_2" pos="-0.007756632 0.0423088 0.02088458" quat="-0.001032456 0.0007927848 0.6087621 0.7933517">
+        <inertial pos="0.0344266 -0.001797094 0.003987836" quat="0.999924 -0.0006647862 -0.0008847926 -0.01228697" mass="0.0055741" diaginertia="1.06851e-07 2.167643e-06 2.229994e-06"/>
+        <joint name="servo_revolute_left_arm_2" type="hinge" pos="0 0 0" axis="0 0 1" armature="0.000163167" range="-1.5707 1.5707" limited="true"/>
+        <geom name="left_arm_2_arm0" class="contact" type="sphere" pos="0.05156 -0.00562 0.004" size="0.006" friction="0.28 0.005 0.0001"/>
+      </body>
+      <body name="right_arm" pos="0.007749918 0.04230884 0.02088458" quat="0.000522599 -0.0004003249 0.6087625 0.7933523">
+        <inertial pos="-0.0344266 -0.001797094 0.003987836" quat="0.999924 -0.0006647862 0.0008847926 0.01228697" mass="0.0055741" diaginertia="1.06851e-07 2.167643e-06 2.229994e-06"/>
+        <joint name="servo_revolute_right_arm" type="hinge" pos="0 0 0" axis="0 0 1" armature="0.000163167" range="-1.5707 1.5707" limited="true"/>
+        <geom name="right_arm_arm0" class="contact" type="sphere" pos="-0.05156 -0.00562 0.004" size="0.006" friction="0.28 0.005 0.0001"/>
+      </body>
+      <body name="right_arm_1" pos="-0.04049108 -0.01438914 0.02088458" quat="0.6863157 0.5277766 -0.3033872 -0.3979684">
+        <inertial pos="-0.0344266 -0.001797094 0.003987836" quat="0.999924 -0.0006647862 0.0008847926 0.01228697" mass="0.0055741" diaginertia="1.06851e-07 2.167643e-06 2.229994e-06"/>
+        <joint name="servo_revolute_right_arm_1" type="hinge" pos="0 0 0" axis="0 0 1" armature="0.000163167" range="-1.5707 1.5707" limited="true"/>
+        <geom name="right_arm_1_arm0" class="contact" type="sphere" pos="-0.05156 -0.00562 0.004" size="0.006" friction="0.28 0.005 0.0001"/>
+      </body>
+      <body name="right_arm_2" pos="0.03273131 -0.02781807 0.02088458" quat="0.6868128 0.5273963 0.3040479 0.3971099">
+        <inertial pos="-0.0344266 -0.001797094 0.003987836" quat="0.999924 -0.0006647862 0.0008847926 0.01228697" mass="0.0055741" diaginertia="1.06851e-07 2.167643e-06 2.229994e-06"/>
+        <joint name="servo_revolute_right_arm_2" type="hinge" pos="0 0 0" axis="0 0 1" armature="0.000163167" range="-1.5707 1.5707" limited="true"/>
+        <geom name="right_arm_2_arm0" class="contact" type="sphere" pos="-0.05156 -0.00562 0.004" size="0.006" friction="0.28 0.005 0.0001"/>
+      </body>
+    </body>
+  </worldbody>
+  <equality>
+    <connect name="ball_leg1" body1="left_arm_1" body2="leg_rod_1" anchor="0.04975042 0.000931254 0.004000013" solref="0.004 1"/>
+    <connect name="ball_leg2" body1="right_arm" body2="leg_rod_2" anchor="-0.04975042 0.000931254 0.004000013" solref="0.004 1"/>
+    <connect name="ball_leg3" body1="right_arm_1" body2="leg_rod_3" anchor="-0.04975042 0.000931254 0.004000013" solref="0.004 1"/>
+    <connect name="ball_leg4" body1="right_arm_2" body2="leg_rod_4" anchor="-0.04975042 0.000931254 0.004000013" solref="0.004 1"/>
+    <connect name="ball_leg5" body1="left_arm_2" body2="leg_rod_5" anchor="0.04975042 0.000931254 0.004000013" solref="0.004 1"/>
+  </equality>
+  <actuator>
+    <motor name="servo_revolute_left_arm" joint="servo_revolute_left_arm" gear="1" ctrllimited="false"/>
+    <motor name="servo_revolute_left_arm_1" joint="servo_revolute_left_arm_1" gear="1" ctrllimited="false"/>
+    <motor name="servo_revolute_right_arm" joint="servo_revolute_right_arm" gear="1" ctrllimited="false"/>
+    <motor name="servo_revolute_right_arm_1" joint="servo_revolute_right_arm_1" gear="1" ctrllimited="false"/>
+    <motor name="servo_revolute_right_arm_2" joint="servo_revolute_right_arm_2" gear="1" ctrllimited="false"/>
+    <motor name="servo_revolute_left_arm_2" joint="servo_revolute_left_arm_2" gear="1" ctrllimited="false"/>
+  </actuator>
+</mujoco>

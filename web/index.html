@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Stewy Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #edf0f3;
+    --panel: #ffffff;
+    --panel-edge: #d5dae0;
+    --ink: #15181c;
+    --ink-soft: #5b6470;
+    --accent: #e27a12;
+    --accent-ink: #ffffff;
+    --telemetry: #2f55c8;
+    --track: #e3e7ec;
+    --scene: #e6e9ed;
+    --grid-major: #7f8a99;
+    --grid-minor: #b3bbc6;
+    --good: #2e8b57;
+    --warn: #c0392b;
+    --radius: 10px;
+    --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #111316;
+      --panel: #1a1d21;
+      --panel-edge: #2b3037;
+      --ink: #e8eaed;
+      --ink-soft: #9aa3ae;
+      --accent: #f29a3e;
+      --accent-ink: #1a1206;
+      --telemetry: #7d9bff;
+      --track: #262a30;
+      --scene: #16191d;
+      --grid-major: #69727f;
+      --grid-minor: #3b424b;
+      --good: #5ec08a;
+      --warn: #ff7b6b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #111316;
+    --panel: #1a1d21;
+    --panel-edge: #2b3037;
+    --ink: #e8eaed;
+    --ink-soft: #9aa3ae;
+    --accent: #f29a3e;
+    --accent-ink: #1a1206;
+    --telemetry: #7d9bff;
+    --track: #262a30;
+    --scene: #16191d;
+    --grid-major: #69727f;
+    --grid-minor: #3b424b;
+    --good: #5ec08a;
+    --warn: #ff7b6b;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font: 400 14px/1.45 var(--body);
+  }
+  .app {
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 0;
+  }
+  .stage { position: relative; min-height: 0; background: var(--scene); }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .overlay {
+    position: absolute; inset: 0; display: grid; place-items: center; padding: 16px;
+    text-align: center; color: var(--ink-soft); pointer-events: none;
+  }
+  .overlay p { max-width: 42ch; margin: 0; }
+  .overlay.error { color: var(--warn); pointer-events: auto; }
+  .hud {
+    position: absolute; left: 16px; bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;
+    pointer-events: none;
+  }
+  .chip {
+    font: 500 12px/1 var(--mono); padding: 6px 9px; border-radius: 999px;
+    background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--panel-edge);
+    color: var(--ink-soft); font-variant-numeric: tabular-nums;
+  }
+  .chip b { color: var(--ink); font-weight: 500; }
+  .rail {
+    background: var(--panel); border-left: 1px solid var(--panel-edge);
+    padding-block: 18px; padding-inline: 18px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .brand { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .brand h1 {
+    font: 600 26px/1 var(--display); letter-spacing: 0.02em; margin: 0; text-transform: uppercase;
+  }
+  .brand h1 span { color: var(--accent); }
+  .brand small { color: var(--ink-soft); font: 400 11px/1.3 var(--mono); text-align: right; }
+  .lede { margin: 0; color: var(--ink-soft); max-width: 60ch; text-wrap: pretty; }
+  .label {
+    font: 600 11px/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+  .pad-wrap { display: grid; justify-items: center; gap: 8px; }
+  #pad { width: 236px; height: 236px; max-width: 100%; }
+  #pad .dir { cursor: pointer; }
+  #pad .dir path { fill: var(--track); stroke: var(--panel-edge); stroke-width: 1; transition: fill .15s; }
+  #pad .dir:hover path, #pad .dir:focus-visible path { fill: color-mix(in srgb, var(--accent) 30%, var(--track)); }
+  #pad .dir.on path { fill: var(--accent); stroke: var(--accent); }
+  #pad .dir text { font: 600 11px var(--mono); fill: var(--ink-soft); pointer-events: none; }
+  #pad .dir.on text { fill: var(--accent-ink); }
+  #pad .dir:focus-visible { outline: none; }
+  #pad .dir:focus-visible path { stroke: var(--ink); stroke-width: 2; }
+  #pad .body { fill: var(--panel); stroke: var(--ink-soft); stroke-width: 1.5; }
+  #pad .head { fill: var(--ink); }
+  #pad .cap { font: 600 10px var(--body); letter-spacing: .08em; fill: var(--ink-soft); text-anchor: middle; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button.act {
+    flex: 1 1 0; min-width: 0; font: 600 13px/1 var(--body); padding: 10px 12px; border-radius: 8px;
+    border: 1px solid var(--panel-edge); background: var(--ground); color: var(--ink); cursor: pointer;
+  }
+  button.act:hover { border-color: var(--ink-soft); }
+  button.act.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  button.act:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .readouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .readout {
+    border: 1px solid var(--panel-edge); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px;
+  }
+  .readout .v { font: 500 22px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
+  .readout .u { font: 400 11px/1 var(--mono); color: var(--ink-soft); }
+  .servos { display: grid; gap: 6px; }
+  .servo { display: grid; grid-template-columns: 22px minmax(0, 1fr) 56px; gap: 8px; align-items: center; }
+  .servo .n { font: 500 11px var(--mono); color: var(--ink-soft); }
+  .servo .bar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .servo .bar i { display: block; height: 100%; width: 0; background: var(--telemetry); }
+  .servo .bar i.hot { background: var(--accent); }
+  .servo .a { font: 400 11px var(--mono); color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
+  .keys { color: var(--ink-soft); font-size: 12px; margin: 0; }
+  kbd {
+    font: 500 11px var(--mono); padding: 1px 5px; border: 1px solid var(--panel-edge); border-bottom-width: 2px;
+    border-radius: 4px; background: var(--ground); color: var(--ink);
+  }
+  .opts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--ink-soft); }
+  .opts select {
+    font: 500 12px var(--body); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--panel-edge);
+    background: var(--ground); color: var(--ink);
+  }
+  .note { font-size: 12px; color: var(--ink-soft); margin: 0; }
+  .terrain { display: grid; gap: 12px; }
+  .lvl { display: grid; gap: 4px; }
+  .lvl-name { font: 600 12px/1.2 var(--body); color: var(--ink); }
+  .sl { display: grid; grid-template-columns: 44px minmax(0, 1fr) 48px; gap: 8px; align-items: center;
+    font-size: 12px; color: var(--ink-soft); }
+  .sl input { width: 100%; margin: 0; accent-color: var(--accent); }
+  .sl input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sl output { font: 400 11px var(--mono); text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(300px, 55%) auto; }
+    .rail { border-left: 0; border-top: 1px solid var(--panel-edge); padding-inline: 16px; }
+    #pad { width: 200px; height: 200px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <div class="stage" id="stage">
+    <div class="overlay" id="overlay"><p id="overlay-text">Loading the physics engine…</p></div>
+    <div class="hud" aria-live="polite">
+      <span class="chip">sim <b id="hud-time">0.0 s</b></span>
+      <span class="chip">policy <b id="hud-policy">stand</b></span>
+      <span class="chip">rate <b id="hud-rate">1×</b></span>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="brand">
+      <h1>Stewy <span>Live</span></h1>
+      <small>MuJoCo 3.14<br>in your browser</small>
+    </div>
+    <p class="lede">A six-servo Stewart-platform walker with no sensors, running the same neural policies
+      trained for the real robot in Isaac Lab. Pick a direction on the robot below.</p>
+
+    <section>
+      <p class="label">Drive (robot view, head up)</p>
+      <div class="pad-wrap">
+        <svg id="pad" viewBox="-120 -120 240 240" role="group" aria-label="Walking and turning controls"></svg>
+      </div>
+    </section>
+
+    <div class="row">
+      <button class="act" id="btn-stop" type="button">Stand</button>
+      <button class="act" id="btn-reset" type="button">Reset robot</button>
+    </div>
+
+    <section>
+      <p class="label">Measured, last second</p>
+      <div class="readouts">
+        <div class="readout"><span class="v" id="ro-speed">0</span><span class="u">mm/s walking</span></div>
+        <div class="readout"><span class="v" id="ro-turn">0</span><span class="u">deg/s turning</span></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="label">Servo load (of the MG90S's 0.051 N·m)</p>
+      <div class="servos" id="servos"></div>
+    </section>
+
+    <section>
+      <p class="label">Terrain (layered Perlin noise)</p>
+      <div class="terrain" id="terrain"></div>
+      <div class="row" style="margin-top: 12px">
+        <button class="act" id="btn-seed" type="button">New terrain</button>
+        <button class="act" id="btn-flat" type="button">Flat</button>
+      </div>
+    </section>
+
+    <div class="opts">
+      <label for="sel-walk">Walker</label>
+      <select id="sel-walk"></select>
+      <label for="sel-turn">Turner</label>
+      <select id="sel-turn"></select>
+      <label for="sel-rate">Speed</label>
+      <select id="sel-rate">
+        <option value="1">Real time</option>
+        <option value="0.5">Half speed</option>
+        <option value="0.25">Quarter speed</option>
+      </select>
+      <label for="sel-cam">Camera</label>
+      <select id="sel-cam">
+        <option value="follow">Follow</option>
+        <option value="free">Free</option>
+      </select>
+    </div>
+
+    <p class="keys"><kbd>W</kbd> walk toward the head · <kbd>Q</kbd> <kbd>E</kbd> the other two walks (the any-direction walkers and the three-walker set have 12 arrows) ·
+      <kbd>A</kbd> <kbd>D</kbd> turn · <kbd>S</kbd> stand · <kbd>R</kbd> reset</p>
+    <p class="note" id="policy-note">Policies: three walkers, three directions each by Stewy's 3-fold
+      symmetry: the smoothest one, now on the robot (1.75 s cycle, 43 mm/s in Isaac Lab, plate 3.2 m/s² rms),
+      the 1.25 s-cycle walker (51 mm/s, plate 4.5 m/s²) and the fast one it replaced (62 mm/s, plate 7.7 m/s²),
+      an any-direction walker from 2026-09-29 (one 60° wedge, mirrored and rotated to all 12 directions of a
+      40 mm/s command; in Isaac Lab it walks about 25 mm/s and walks the six in-between directions along a neighbouring one),
+      a newer any-direction walker trained with no plate penalty (2026-09-30, 40 mm/s in Isaac Lab but plate 7.7 m/s², and it drifts in yaw),
+      the three-walker set (2026-09-30): each of the 12 directions is walked by one of three single-direction walkers,
+      rotated or mirrored: A = the robot's walker (toward the head, 30°, 150°), B = the firmware gait played backwards
+      (away from the head, −30°, −150°; 42.7 mm/s, plate 4.1 m/s²) and C = the firmware gait steered to −60°
+      (0°, ±60°, ±120°, 180°; 42.3 mm/s, plate 2.5 m/s², lands about 5° short),
+      plus five turn-in-place policies (the other way by mirror symmetry): the one now on the robot, trained for calm legs (42 °/s in Isaac Lab, legs 28 rad/s² rms, plate 2.1 m/s²), the first robot turner (48 °/s, yaw rate wobbles ±24 °/s, plate 3.9 m/s²) and three smoother retrains from 2026-09-29: steady rate (wobble ±10 °/s), calm plate (2.6 m/s²) and both (±14 °/s, 2.8 m/s²). Servos use the MG90S model
+      measured on the bench. The terrain is new to them: every policy was trained on flat ground, blind, so this shows
+      how far that carries.</p>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script type="module" src="app.js"></script>
+
+</body>
+</html>

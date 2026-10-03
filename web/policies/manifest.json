@@ -1,0 +1,89 @@
+[
+ {
+  "name": "dir_b_away",
+  "label": "42 mm/s: away from the head (group B)",
+  "short": "B",
+  "mode": "forward",
+  "action": "ga_residual",
+  "group": "B"
+ },
+ {
+  "name": "dir_c_steer",
+  "label": "42 mm/s: -60\u00b0 steered firmware gait (group C)",
+  "short": "C",
+  "mode": "forward",
+  "action": "ga_residual",
+  "group": "C"
+ },
+ {
+  "name": "omni_walk60",
+  "label": "25 mm/s: any direction (60\u00b0 wedge)",
+  "short": "omni60",
+  "mode": "omni",
+  "action": "pose_ik"
+ },
+ {
+  "name": "omni_walk60_s7",
+  "label": "47 mm/s: any direction, drifts in yaw (newest omni)",
+  "short": "omni60s7",
+  "mode": "omni",
+  "action": "pose_ik"
+ },
+ {
+  "name": "spin_both",
+  "label": "51\u00b0/s: steady + calm",
+  "short": "both",
+  "mode": "spin",
+  "action": "pose_ik"
+ },
+ {
+  "name": "spin_calm_legs",
+  "label": "42\u00b0/s: calm legs, on the robot",
+  "short": "calmlegs",
+  "mode": "spin",
+  "action": "pose_ik"
+ },
+ {
+  "name": "spin_ccw",
+  "label": "48\u00b0/s: first robot turner, wobbly",
+  "short": "robot",
+  "mode": "spin",
+  "action": "pose_ik"
+ },
+ {
+  "name": "spin_plate",
+  "label": "49\u00b0/s: calm plate",
+  "short": "calm",
+  "mode": "spin",
+  "action": "pose_ik"
+ },
+ {
+  "name": "spin_steady",
+  "label": "50\u00b0/s: steady rate",
+  "short": "steady",
+  "mode": "spin",
+  "action": "pose_ik"
+ },
+ {
+  "name": "walk62",
+  "label": "62 mm/s: fastest, shakiest",
+  "short": "walk62",
+  "mode": "forward",
+  "action": "ga_residual"
+ },
+ {
+  "name": "walk_smooth",
+  "label": "51 mm/s: smooth, 1.25 s cycle",
+  "short": "smooth",
+  "mode": "forward",
+  "action": "ga_residual"
+ },
+ {
+  "name": "walk_smoother",
+  "label": "43 mm/s: smoothest, on the robot",
+  "short": "smoothest",
+  "mode": "forward",
+  "action": "ga_residual",
+  "group": "A"
+ }
+]
