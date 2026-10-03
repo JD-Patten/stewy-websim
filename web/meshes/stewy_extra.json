@@ -1,15 +1,87 @@
 [
  {
-  "body": "top_plate",
+  "body": "left_arm",
   "color": [
    0.76,
    0.78,
    0.81
   ],
   "vertex_offset": 0,
-  "vertex_count": 1532,
-  "index_offset": 18384,
-  "index_count": 9192
+  "vertex_count": 1137,
+  "index_offset": 13644,
+  "index_count": 6798
+ },
+ {
+  "body": "left_arm_1",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 40836,
+  "vertex_count": 1137,
+  "index_offset": 54480,
+  "index_count": 6798
+ },
+ {
+  "body": "right_arm",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 81672,
+  "vertex_count": 1140,
+  "index_offset": 95352,
+  "index_count": 6816
+ },
+ {
+  "body": "right_arm_1",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 122616,
+  "vertex_count": 1137,
+  "index_offset": 136260,
+  "index_count": 6798
+ },
+ {
+  "body": "right_arm_2",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 163452,
+  "vertex_count": 1137,
+  "index_offset": 177096,
+  "index_count": 6798
+ },
+ {
+  "body": "left_arm_2",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 204288,
+  "vertex_count": 1140,
+  "index_offset": 217968,
+  "index_count": 6810
+ },
+ {
+  "body": "top_plate",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 245208,
+  "vertex_count": 3403,
+  "index_offset": 286044,
+  "index_count": 24606
  },
  {
   "body": "top_plate",
@@ -18,10 +90,10 @@
    0.91,
    0.91
   ],
-  "vertex_offset": 55152,
-  "vertex_count": 10670,
-  "index_offset": 183192,
-  "index_count": 67257,
+  "vertex_offset": 384468,
+  "vertex_count": 573,
+  "index_offset": 391344,
+  "index_count": 3678,
   "group": "head"
  },
  {
@@ -31,161 +103,217 @@
    0.784,
    0.831
   ],
-  "vertex_offset": 452220,
+  "vertex_offset": 406056,
   "vertex_count": 6768,
-  "index_offset": 533436,
+  "index_offset": 487272,
   "index_count": 42228,
   "group": "head"
  },
  {
-  "body": "top_plate",
+  "body": "root",
   "color": [
    0.894,
    0.89,
    0.812
   ],
-  "vertex_offset": 702348,
-  "vertex_count": 135,
-  "index_offset": 703968,
-  "index_count": 798,
-  "group": "head"
+  "vertex_offset": 656184,
+  "vertex_count": 134,
+  "index_offset": 657792,
+  "index_count": 792
+ },
+ {
+  "body": "root",
+  "color": [
+   0.76,
+   0.78,
+   0.81
+  ],
+  "vertex_offset": 660960,
+  "vertex_count": 4831,
+  "index_offset": 718932,
+  "index_count": 31074
+ },
+ {
+  "body": "root",
+  "color": [
+   0.91,
+   0.91,
+   0.91
+  ],
+  "vertex_offset": 843228,
+  "vertex_count": 2022,
+  "index_offset": 867492,
+  "index_count": 16920
  },
  {
   "body": "top_plate",
   "color": [
-   0.824,
-   0.82,
-   0.78
+   0.76,
+   0.78,
+   0.81
   ],
-  "vertex_offset": 707160,
-  "vertex_count": 421,
-  "index_offset": 712212,
-  "index_count": 2508,
-  "group": "head"
- },
- {
-  "body": "top_plate",
-  "color": [
-   0.1,
-   0.3,
-   0.7
-  ],
-  "vertex_offset": 722244,
-  "vertex_count": 2929,
-  "index_offset": 757392,
-  "index_count": 23718,
-  "group": "head"
- },
- {
-  "body": "top_plate",
-  "color": [
-   0.067,
-   0.067,
-   0.067
-  ],
-  "vertex_offset": 852264,
-  "vertex_count": 704,
-  "index_offset": 860712,
-  "index_count": 8598,
-  "group": "head"
- },
- {
-  "body": "top_plate",
-  "color": [
-   0.855,
-   0.804,
-   0.0
-  ],
-  "vertex_offset": 895104,
-  "vertex_count": 1568,
-  "index_offset": 913920,
-  "index_count": 8778,
-  "group": "head"
- },
- {
-  "body": "top_plate",
-  "color": [
-   0.157,
-   0.157,
-   0.157
-  ],
-  "vertex_offset": 949032,
-  "vertex_count": 764,
-  "index_offset": 958200,
-  "index_count": 4920,
+  "vertex_offset": 935172,
+  "vertex_count": 43055,
+  "index_offset": 1451832,
+  "index_count": 274956,
   "group": "head"
  },
  {
   "body": "left_arm",
   "color": [
-   0.76,
-   0.78,
-   0.81
+   0.93,
+   0.93,
+   0.9
   ],
-  "vertex_offset": 977880,
-  "vertex_count": 892,
-  "index_offset": 988584,
-  "index_count": 5352
+  "vertex_offset": 2551656,
+  "vertex_count": 446,
+  "index_offset": 2557008,
+  "index_count": 2796
  },
  {
   "body": "left_arm_1",
   "color": [
-   0.76,
-   0.78,
-   0.81
+   0.93,
+   0.93,
+   0.9
   ],
-  "vertex_offset": 1009992,
-  "vertex_count": 892,
-  "index_offset": 1020696,
-  "index_count": 5352
+  "vertex_offset": 2568192,
+  "vertex_count": 446,
+  "index_offset": 2573544,
+  "index_count": 2796
  },
  {
   "body": "right_arm",
   "color": [
-   0.76,
-   0.78,
-   0.81
+   0.93,
+   0.93,
+   0.9
   ],
-  "vertex_offset": 1042104,
-  "vertex_count": 895,
-  "index_offset": 1052844,
-  "index_count": 5370
+  "vertex_offset": 2584728,
+  "vertex_count": 444,
+  "index_offset": 2590056,
+  "index_count": 2784
  },
  {
   "body": "right_arm_1",
   "color": [
-   0.76,
-   0.78,
-   0.81
+   0.93,
+   0.93,
+   0.9
   ],
-  "vertex_offset": 1074324,
-  "vertex_count": 892,
-  "index_offset": 1085028,
-  "index_count": 5352
+  "vertex_offset": 2601192,
+  "vertex_count": 444,
+  "index_offset": 2606520,
+  "index_count": 2784
  },
  {
   "body": "right_arm_2",
   "color": [
-   0.76,
-   0.78,
-   0.81
+   0.93,
+   0.93,
+   0.9
   ],
-  "vertex_offset": 1106436,
-  "vertex_count": 892,
-  "index_offset": 1117140,
-  "index_count": 5352
+  "vertex_offset": 2617656,
+  "vertex_count": 444,
+  "index_offset": 2622984,
+  "index_count": 2784
  },
  {
   "body": "left_arm_2",
+  "color": [
+   0.93,
+   0.93,
+   0.9
+  ],
+  "vertex_offset": 2634120,
+  "vertex_count": 446,
+  "index_offset": 2639472,
+  "index_count": 2796
+ },
+ {
+  "body": "top_plate",
   "color": [
    0.76,
    0.78,
    0.81
   ],
-  "vertex_offset": 1138548,
-  "vertex_count": 895,
-  "index_offset": 1149288,
-  "index_count": 5364
+  "vertex_offset": 2650656,
+  "vertex_count": 2104,
+  "index_offset": 2675904,
+  "index_count": 12534,
+  "group": "head"
+ },
+ {
+  "body": "root",
+  "color": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "vertex_offset": 2726040,
+  "vertex_count": 1413,
+  "index_offset": 2742996,
+  "index_count": 1686
+ },
+ {
+  "body": "root",
+  "color": [
+   0.737,
+   0.737,
+   0.737
+  ],
+  "vertex_offset": 2749740,
+  "vertex_count": 2094,
+  "index_offset": 2774868,
+  "index_count": 16008
+ },
+ {
+  "body": "root",
+  "color": [
+   0.855,
+   0.804,
+   0.0
+  ],
+  "vertex_offset": 2838900,
+  "vertex_count": 206,
+  "index_offset": 2841372,
+  "index_count": 594
+ },
+ {
+  "body": "root",
+  "color": [
+   0.6,
+   0.6,
+   0.6
+  ],
+  "vertex_offset": 2843748,
+  "vertex_count": 1243,
+  "index_offset": 2858664,
+  "index_count": 7914
+ },
+ {
+  "body": "root",
+  "color": [
+   0.314,
+   0.486,
+   0.412
+  ],
+  "vertex_offset": 2890320,
+  "vertex_count": 2086,
+  "index_offset": 2915352,
+  "index_count": 7902
+ },
+ {
+  "body": "root",
+  "color": [
+   0.584,
+   0.584,
+   0.584
+  ],
+  "vertex_offset": 2946960,
+  "vertex_count": 1730,
+  "index_offset": 2967720,
+  "index_count": 11592
  },
  {
   "body": "top_plate",
@@ -194,9 +322,9 @@
    0.188,
    0.188
   ],
-  "vertex_offset": 1170744,
+  "vertex_offset": 3014088,
   "vertex_count": 3661,
-  "index_offset": 1214676,
+  "index_offset": 3058020,
   "index_count": 23034,
   "group": "head"
  },
@@ -207,9 +335,9 @@
    0.8,
    0.8
   ],
-  "vertex_offset": 1306812,
+  "vertex_offset": 3150156,
   "vertex_count": 212,
-  "index_offset": 1309356,
+  "index_offset": 3152700,
   "index_count": 1260,
   "group": "head"
  },
@@ -220,9 +348,9 @@
    0.251,
    0.251
   ],
-  "vertex_offset": 1314396,
+  "vertex_offset": 3157740,
   "vertex_count": 218,
-  "index_offset": 1317012,
+  "index_offset": 3160356,
   "index_count": 1314,
   "group": "head"
  },
@@ -233,9 +361,9 @@
    0.988,
    0.937
   ],
-  "vertex_offset": 1322268,
+  "vertex_offset": 3165612,
   "vertex_count": 771,
-  "index_offset": 1331520,
+  "index_offset": 3174864,
   "index_count": 4746,
   "group": "head"
  },
@@ -246,9 +374,9 @@
    0.506,
    0.506
   ],
-  "vertex_offset": 1350504,
+  "vertex_offset": 3193848,
   "vertex_count": 367,
-  "index_offset": 1354908,
+  "index_offset": 3198252,
   "index_count": 2316,
   "group": "head"
  }

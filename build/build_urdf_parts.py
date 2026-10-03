@@ -34,10 +34,17 @@ ap.add_argument("--grid", type=float, default=0.6, help="vertex clustering cell,
 a = ap.parse_args()
 
 LIGHT_BLUE, SILVER = [0.647, 0.784, 0.831], [0.76, 0.78, 0.81]   # site light blue #a5c8d4
-# head parts that are 3D printed take the printed-part colour; hidden hardware is left out
+WHITE = [0.93, 0.93, 0.9]
+# 3D-printed head parts take the printed-part colour
 PRINTED = ("Head_Bottom_Half", "Head_Top_Half", "Distance_Sensor_Stop", "Joystick_Standoff")
-SKIP = ("_4mm_Heat_Set_Insert", "Socket_button_head_screw", "M3_Lock_Nut")
-DEFAULT_COL = {"Platine_step": [0.1, 0.3, 0.7], "XH_2Y": [0.91, 0.91, 0.91], "JST___XH_MALE_5_pin": [0.91, 0.91, 0.91]}
+# left out everywhere: heat-set inserts (hidden), the head PCB and everything soldered to it,
+# and the wiring inside the head (cable links and their plugs)
+SKIP_PARTS = ("_4mm_Heat_Set_Insert", "stewy_s_head_", "JST_XH_B5B", "JST_XH_B4B", "JST_XH_B2B_XH_A_1x02_P2_50mm_Vertical_1",
+              "XH_2Y", "XH_4Y", "JST___XH_MALE")
+SKIP_LINKS = ("cable",)
+# the HC-SR04 sensor (the platine_step link and everything on it): all silver and never simplified
+BOLTS = ("Socket_button_head_screw", "M3_Lock_Nut", "_8mm_M3_Stud")
+DEFAULT_COL = {}
 
 
 def T(o):
@@ -101,7 +108,7 @@ def visuals(l):
         M = W(l) @ T(v.find("origin"))
         t = stl(os.path.join(a.urdf, "meshes", name + ".stl")) * s
         c = v.find("material/color")
-        out.append((re.sub(r"(_\d+)+$", "", name), t @ M[:3, :3].T + M[:3, 3],
+        out.append((name if name.startswith("JST_XH_B2B") else re.sub(r"(_\d+)+$", "", name), t @ M[:3, :3].T + M[:3, 3],
                     [float(x) for x in c.get("rgba").split()[:3]] if c is not None else None))
     return out
 
@@ -156,24 +163,39 @@ for n in ARMS:
     print(f"[parts] {n}: turned {math.degrees(th):+.2f} deg, ball {np.linalg.norm((Rz @ Wi @ np.r_[b, 1])[:3] - an) * 1000:.2f} mm off")
 
 # ---- collect the pieces ----------------------------------------------------------------
+head_root = set(sub("head_bottom_half")) - set(sub("top_plate"))
+leg_chain = set()                                    # leg links below each arm ball (their own sim bodies)
+for l in links:
+    if l.startswith("tapped_ball_bearing"):
+        leg_chain |= set(sub(l)) - {l}
+arm_of = {l: n for n in ARMS for l in set(sub(n)) - leg_chain}
 plate_set = set(sub("top_plate"))
-pieces = collections.defaultdict(list)          # (body, colour, group) -> [triangles]
+hc_links = set(sub("platine_step"))
+USD_HAS = ("Left_Arm", "Right_Arm", "Base_top_half", "Base_bottom_half", "Rubber_Foot", "servo_motor", "Top_Plate")
+pieces = collections.defaultdict(list)          # (body, colour, group, simplify) -> [triangles]
 for l, name, t, rgb in every:
-    if name == "Tapped_Ball_Bearing":
-        arm = min(ARMS, key=lambda n: np.linalg.norm(W(n)[:3, 3] - centre(t)))
-        M = arm_T[arm]
-        pieces[(arm, tuple(SILVER), "")].append(t @ M[:3, :3].T + M[:3, 3])
-    elif name == "Bearing":
-        pieces[("top_plate", tuple(SILVER), "")].append(t @ plate_T[:3, :3].T + plate_T[:3, 3])
-    elif l not in plate_set and centre(t)[2] > 0.08 and not name.startswith(SKIP):
-        col = LIGHT_BLUE if any(k in name for k in PRINTED) else (rgb or DEFAULT_COL.get(name, [0.6, 0.6, 0.6]))
-        pieces[("top_plate", tuple(round(c, 3) for c in col), "head")].append(t @ plate_T[:3, :3].T + plate_T[:3, 3])
+    if name.startswith(SKIP_PARTS) or any(k in l for k in SKIP_LINKS) or name.startswith(USD_HAS):
+        continue
+    hc = l in hc_links
+    col = (SILVER if hc or name.startswith(BOLTS) or name == "Bearing" or name == "Tapped_Ball_Bearing" else
+           LIGHT_BLUE if any(k in name for k in PRINTED) else WHITE if name == "Servo_Horn" else (rgb or [0.6, 0.6, 0.6]))
+    key = lambda body, group="": (body, tuple(round(c, 3) for c in col), group, not hc)
+    if l in arm_of:                                  # arm ball, servo horn and its screw, stud
+        M = arm_T[arm_of[l]]
+        pieces[key(arm_of[l])].append(t @ M[:3, :3].T + M[:3, 3])
+    elif l in plate_set:                             # top bearings and their lock nuts
+        if name in ("Bearing", "M3_Lock_Nut"):
+            pieces[key("top_plate")].append(t @ plate_T[:3, :3].T + plate_T[:3, 3])
+    elif l in head_root or centre(t)[2] > 0.08:      # the head, on the top plate
+        pieces[key("top_plate", "head")].append(t @ plate_T[:3, :3].T + plate_T[:3, 3])
+    elif l not in leg_chain:                         # the base: bolts, base PCB, Arduino Nano ESP32
+        pieces[key("root")].append(t)                # URDF root frame = the sim's root body frame
 
 blob, man, total = bytearray(), [], 0
-for (body, col, group), lst in pieces.items():
+for (body, col, group, simplify), lst in pieces.items():
     tri = np.concatenate(lst).reshape(-1, 3)
     Tidx = np.arange(len(tri)).reshape(-1, 3)
-    cell = np.round(tri / (a.grid / 1000.0)).astype(np.int64)
+    cell = np.round(tri / ((a.grid if simplify else 0.001) / 1000.0)).astype(np.int64)
     _, first, inv = np.unique(cell, axis=0, return_index=True, return_inverse=True)
     Pv = tri[first]
     Ti = inv.reshape(-1)[Tidx]
