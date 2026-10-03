@@ -694,11 +694,13 @@ async function main() {
     const P = (r, w) => `${(ux * r + px * w).toFixed(1)},${(uy * r + py * w).toFixed(1)}`;
     return `M${P(56, -w1)} L${P(84, -w1)} L${P(84, -w2)} L${P(112, 0)} L${P(84, w2)} L${P(84, w1)} L${P(56, w1)} Z`;
   }
+  // a curved turn arrow; SVG y points down, so on screen a rising angle turns clockwise.
+  // Counter-clockwise (sign > 0) sits upper left and points from 250 to 200 deg
   function arc(sign) {
-    const r1 = 60, r2 = 76, a0 = sign > 0 ? 200 : -20, a1 = sign > 0 ? 250 : -70;
+    const r1 = 60, r2 = 76, [a0, a1] = sign > 0 ? [250, 200] : [-70, -20];
     const pt = (r, a) => `${(r * Math.cos((a * Math.PI) / 180)).toFixed(1)},${(r * Math.sin((a * Math.PI) / 180)).toFixed(1)}`;
-    const sw = sign > 0 ? 1 : 0;
-    return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 8, a1)} L${pt((r1 + r2) / 2, a1 + (sign > 0 ? 16 : -16))} ` +
+    const up = a1 > a0, sw = up ? 1 : 0;
+    return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 8, a1)} L${pt((r1 + r2) / 2, a1 + (up ? 16 : -16))} ` +
       `L${pt(r2 + 8, a1)} L${pt(r2, a1)} A${r2},${r2} 0 0 ${1 - sw} ${pt(r2, a0)} Z`;
   }
   function renderPad() {
