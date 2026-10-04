@@ -745,14 +745,14 @@ async function main() {
   };
   const pad = $("#pad");
   const toPad = (deg) => { const t = (deg * Math.PI) / 180; return [-Math.cos(t), Math.sin(t)]; };
-  // a curved turn arrow; SVG y points down, so on screen a rising angle turns clockwise.
-  // Counter-clockwise (sign > 0) sits upper left and points from 238 to 202 deg
+  // a curved turn arrow beside the head, pointing up toward it. SVG y points down, so on screen a
+  // rising angle turns clockwise: the clockwise arrow is on the left, the counter-clockwise one on the right
   function arc(sign) {
-    const r1 = 104, r2 = 120, [a0, a1] = sign > 0 ? [238, 202] : [-58, -22];
+    const r1 = 102, r2 = 122, [a0, a1] = sign > 0 ? [-22, -62] : [202, 242];
     const pt = (r, a) => `${(r * Math.cos((a * Math.PI) / 180)).toFixed(1)},${(r * Math.sin((a * Math.PI) / 180)).toFixed(1)}`;
     const up = a1 > a0, sw = up ? 1 : 0;
-    return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 6, a1)} L${pt((r1 + r2) / 2, a1 + (up ? 12 : -12))} ` +
-      `L${pt(r2 + 6, a1)} L${pt(r2, a1)} A${r2},${r2} 0 0 ${1 - sw} ${pt(r2, a0)} Z`;
+    return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 8, a1)} L${pt((r1 + r2) / 2, a1 + (up ? 16 : -16))} ` +
+      `L${pt(r2 + 8, a1)} L${pt(r2, a1)} A${r2},${r2} 0 0 ${1 - sw} ${pt(r2, a0)} Z`;
   }
   // Stewy from above, flat illustration (head up). Settings tuned in the joystick editor.
   // The knob sits on a base of the same size; it sticks where it is left, at the centre (stand)
@@ -805,12 +805,10 @@ async function main() {
   const PAD_ART = padArt();
   function renderPad() {
     let s = PAD_ART + `<circle class="base" r="${KNOB}"/>`;
-    [[1, "A", "counter-clockwise"], [-1, "D", "clockwise"]].forEach(([sg, key, name]) => {
-      const on = mode.kind === "turn" && mode.dir === sg, a = sg > 0 ? 220 : -40;
-      const tx = 134 * Math.cos((a * Math.PI) / 180), ty = 134 * Math.sin((a * Math.PI) / 180);
+    [[-1, "D", "clockwise"], [1, "A", "counter-clockwise"]].forEach(([sg, key, name]) => {
+      const on = mode.kind === "turn" && mode.dir === sg;
       s += `<g class="dir${on ? " on" : ""}" tabindex="0" role="button" aria-pressed="${on}" data-turn="${sg}"
-        aria-label="Turn ${name} (key ${key})"><path d="${arc(sg)}"/>
-        <text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle">${key}</text></g>`;
+        aria-label="Turn ${name} (key ${key})"><path d="${arc(sg)}"/></g>`;
     });
     const walking = mode.kind === "walk", [kx, ky] = walking ? toPad(dirs()[mode.k]) : [0, 0];
     const where = walking ? (fromHead(dirs()[mode.k]) ? fromHead(dirs()[mode.k]) + " degrees clockwise from the head" : "toward the head") : "centre, standing";
