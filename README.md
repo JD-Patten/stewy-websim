@@ -18,7 +18,7 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
 
 | Input | Action |
 |---|---|
-| Direction pad, or <kbd>W</kbd> <kbd>Q</kbd> <kbd>E</kbd> | Walk |
+| Joystick (drag or tap; it stays put and snaps to 12 directions, centre = stand), or <kbd>W</kbd> <kbd>Q</kbd> <kbd>E</kbd> | Walk |
 | <kbd>A</kbd> <kbd>D</kbd> | Turn in place |
 | <kbd>S</kbd> | Stand |
 | <kbd>R</kbd> | Reset |

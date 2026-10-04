@@ -697,7 +697,6 @@ async function main() {
 
   // ---- direction pad (top view, head up). Walk directions measured in MuJoCo, base frame ----
   const DIRS = [-90, 150, 30];                        // remap k = 0, 1, 2 (measured -88, 144, 36)
-  const KEYS = ["W", "E", "Q"];
   // any-direction walkers: 12 commanded directions, every 30 deg from the head (the lab's check set)
   const OMNI_DIRS = Array.from({ length: 12 }, (_, i) => ((-90 + 30 * i + 540) % 360) - 180);
   const dirs = () => (isOmni() || isCombo() ? OMNI_DIRS : DIRS);
@@ -705,48 +704,50 @@ async function main() {
     const d = dirs().map((x) => Math.abs(((x - deg + 540) % 360) - 180));
     return d.indexOf(Math.min(...d));
   };
-  const keyOf = (deg) => { const i = DIRS.indexOf(deg); return i < 0 ? "" : KEYS[i]; };
   const fromHead = (deg) => {                         // degrees clockwise from the head on the pad
     const [x, y] = toPad(deg); return Math.round((Math.atan2(x, -y) * 180 / Math.PI + 360) % 360) % 360;
   };
   const pad = $("#pad");
   const toPad = (deg) => { const t = (deg * Math.PI) / 180; return [-Math.cos(t), Math.sin(t)]; };
-  function wedge(deg, w1 = 20, w2 = 32) {
-    const [ux, uy] = toPad(deg), px = -uy, py = ux;
-    const P = (r, w) => `${(ux * r + px * w).toFixed(1)},${(uy * r + py * w).toFixed(1)}`;
-    return `M${P(56, -w1)} L${P(84, -w1)} L${P(84, -w2)} L${P(112, 0)} L${P(84, w2)} L${P(84, w1)} L${P(56, w1)} Z`;
-  }
   // a curved turn arrow; SVG y points down, so on screen a rising angle turns clockwise.
-  // Counter-clockwise (sign > 0) sits upper left and points from 250 to 200 deg
+  // Counter-clockwise (sign > 0) sits upper left and points from 238 to 202 deg
   function arc(sign) {
-    const r1 = 60, r2 = 76, [a0, a1] = sign > 0 ? [250, 200] : [-70, -20];
+    const r1 = 104, r2 = 120, [a0, a1] = sign > 0 ? [238, 202] : [-58, -22];
     const pt = (r, a) => `${(r * Math.cos((a * Math.PI) / 180)).toFixed(1)},${(r * Math.sin((a * Math.PI) / 180)).toFixed(1)}`;
     const up = a1 > a0, sw = up ? 1 : 0;
-    return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 8, a1)} L${pt((r1 + r2) / 2, a1 + (up ? 16 : -16))} ` +
-      `L${pt(r2 + 8, a1)} L${pt(r2, a1)} A${r2},${r2} 0 0 ${1 - sw} ${pt(r2, a0)} Z`;
+    return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 6, a1)} L${pt((r1 + r2) / 2, a1 + (up ? 12 : -12))} ` +
+      `L${pt(r2 + 6, a1)} L${pt(r2, a1)} A${r2},${r2} 0 0 ${1 - sw} ${pt(r2, a0)} Z`;
+  }
+  // Stewy from above as line art (head up): hexagon body, two ultrasonic sensors on the head side.
+  // The joystick knob is drawn on top; it sticks where it is left, at the centre (stand) or on
+  // one of the ring positions (a walking direction).
+  const RING = 44, KNOB = 36, DEAD = 18;
+  function hexPts(r) {
+    return Array.from({ length: 6 }, (_, i) => {
+      const a = (60 * i * Math.PI) / 180; return `${(r * Math.cos(a)).toFixed(1)},${(r * Math.sin(a)).toFixed(1)}`;
+    }).join(" ");
   }
   function renderPad() {
-    const hex = Array.from({ length: 6 }, (_, i) => {
-      const a = ((60 * i + 30) * Math.PI) / 180; return `${(40 * Math.cos(a)).toFixed(1)},${(40 * Math.sin(a)).toFixed(1)}`;
-    }).join(" ");
-    let s = `<polygon class="body" points="${hex}"/><circle class="head" cx="0" cy="-22" r="6"/>` +
-      `<text class="cap" x="0" y="6">HEAD</text><text class="cap" x="0" y="18">UP</text>`;
-    const omni = isOmni() || isCombo();
-    dirs().forEach((d, k) => {
-      const [ux, uy] = toPad(d), on = mode.kind === "walk" && mode.k === k, key = keyOf(d);
-      const name = omni ? (fromHead(d) ? `${fromHead(d)} degrees clockwise from the head` : "toward the head")
-        : k === 0 ? "toward the head" : "direction " + (k + 1);
-      s += `<g class="dir${on ? " on" : ""}" tabindex="0" role="button" aria-pressed="${on}" data-walk="${k}"
-        aria-label="Walk ${name}${key ? ` (key ${key})` : ""}">
-        <path d="${omni ? wedge(d, 8, 14) : wedge(d)}"/>${key ? `<text x="${(ux * 70).toFixed(1)}" y="${(uy * 70 + 4).toFixed(1)}" text-anchor="middle">${key}</text>` : ""}</g>`;
+    let s = `<g class="art"><rect x="-44" y="-104" width="30" height="30" rx="4"/><rect x="14" y="-104" width="30" height="30" rx="4"/>` +
+      `<ellipse cx="-29" cy="-104" rx="15" ry="5"/><ellipse cx="29" cy="-104" rx="15" ry="5"/>` +
+      `<polygon points="${hexPts(88)}"/><polygon class="in" points="${hexPts(76)}"/></g>`;
+    dirs().forEach((d) => {
+      const [ux, uy] = toPad(d);
+      s += `<circle class="tick" cx="${(ux * RING).toFixed(1)}" cy="${(uy * RING).toFixed(1)}" r="2.5"/>`;
     });
     [[1, "A", "counter-clockwise"], [-1, "D", "clockwise"]].forEach(([sg, key, name]) => {
-      const on = mode.kind === "turn" && mode.dir === sg, a = sg > 0 ? 225 : -45;
-      const tx = 90 * Math.cos((a * Math.PI) / 180), ty = 90 * Math.sin((a * Math.PI) / 180);
+      const on = mode.kind === "turn" && mode.dir === sg, a = sg > 0 ? 220 : -40;
+      const tx = 134 * Math.cos((a * Math.PI) / 180), ty = 134 * Math.sin((a * Math.PI) / 180);
       s += `<g class="dir${on ? " on" : ""}" tabindex="0" role="button" aria-pressed="${on}" data-turn="${sg}"
         aria-label="Turn ${name} (key ${key})"><path d="${arc(sg)}"/>
         <text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle">${key}</text></g>`;
     });
+    const walking = mode.kind === "walk", [kx, ky] = walking ? toPad(dirs()[mode.k]) : [0, 0];
+    const where = walking ? (fromHead(dirs()[mode.k]) ? fromHead(dirs()[mode.k]) + " degrees clockwise from the head" : "toward the head") : "centre, standing";
+    s += `<g class="knob${walking ? " on" : ""}" id="knob" transform="translate(${(kx * RING).toFixed(1)} ${(ky * RING).toFixed(1)})"
+      tabindex="0" role="slider" aria-label="Walking joystick: Left and Right arrows pick a direction, Down returns to centre"
+      aria-valuetext="${where}">
+      <circle r="${KNOB}"/><circle class="ring" r="${KNOB - 9}"/><circle class="dot" r="2.2"/></g>`;
     pad.innerHTML = s;
     $("#hud-policy").textContent = mode.kind === "walk"
       ? (fromHead(dirs()[mode.k]) ? `walk ${fromHead(dirs()[mode.k])}° from head` : "walk toward head")
@@ -759,8 +760,36 @@ async function main() {
     if (g.dataset.walk !== undefined) setMode({ kind: "walk", k: +g.dataset.walk });
     else setMode({ kind: "turn", dir: +g.dataset.turn });
   };
-  pad.addEventListener("click", (e) => pick(e.target));
-  pad.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(e.target); } });
+  pad.addEventListener("click", (e) => { if (e.target.closest(".dir")) pick(e.target); });
+  const padToDeg = (x, y) => (Math.atan2(y, -x) * 180) / Math.PI;   // inverse of toPad
+  pad.addEventListener("keydown", (e) => {
+    if (e.target.closest(".dir")) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(e.target); } return; }
+    if (!e.target.closest("#knob")) return;
+    const cur = mode.kind === "walk" ? fromHead(dirs()[mode.k]) : null, step = e.key === "ArrowRight" ? 30 : e.key === "ArrowLeft" ? -30 : 0;
+    if (step) {                                       // rotate the knob round the ring, clockwise on the pad
+      e.preventDefault();
+      const to = cur === null ? (step > 0 ? 0 : 330) : (cur + step + 360) % 360;
+      setMode({ kind: "walk", k: nearest(padToDeg(Math.sin(to * Math.PI / 180), -Math.cos(to * Math.PI / 180))) });
+    } else if (e.key === "ArrowDown" || e.key === "Escape") { e.preventDefault(); setMode({ kind: "stand" }); }
+    else return;
+    pad.querySelector("#knob").focus();
+  });
+  // sticky joystick: drag (or tap) anywhere on the body; the knob snaps to the nearest ring
+  // position, or to the centre (stand) inside the dead zone, and stays there when released
+  function steer(e) {
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(pad.getScreenCTM().inverse());
+    const next = Math.hypot(p.x, p.y) < DEAD ? { kind: "stand" } : { kind: "walk", k: nearest(padToDeg(p.x, p.y)) };
+    if (next.kind !== mode.kind || next.k !== mode.k) setMode(next);
+  }
+  let dragging = false;
+  pad.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".dir")) return;
+    dragging = true; pad.setPointerCapture(e.pointerId); steer(e);
+  });
+  pad.addEventListener("pointermove", (e) => { if (dragging) steer(e); });
+  const endDrag = () => { dragging = false; };
+  pad.addEventListener("pointerup", endDrag);
+  pad.addEventListener("pointercancel", endDrag);
   $("#btn-stop").addEventListener("click", () => setMode({ kind: "stand" }));
   $("#btn-reset").addEventListener("click", () => { resetRobot(); setMode({ kind: "stand" }); });
   let rate = 1;
