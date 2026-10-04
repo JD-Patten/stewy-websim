@@ -722,7 +722,7 @@ async function main() {
   // The knob sits on a base of the same size; it sticks where it is left, at the centre (stand)
   // or on one of the ring positions (a walking direction), uncovering part of the base.
   const PAD = { a: 108, b: 70, corner: 18, fillet: 13, eyeW: 23, eyeGap: 25.5, eyeDy: -5, eyeH: 12,
-    mouthW: 18, mouthY: 5, mouthH: 5, knob: 32, ring: 30 };
+    mouthW: 18, mouthY: 2, mouthH: 5, knob: 32, ring: 30 };
   const RING = PAD.ring, KNOB = PAD.knob, DEAD = 12;
   // hexagon whose sides alternate long (front and every other side) and short, all angles 120 deg
   function padBody() {
