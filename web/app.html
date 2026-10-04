@@ -92,16 +92,23 @@
   #pad .dir:focus-visible { outline: none; }
   #pad .dir:focus-visible path { stroke: var(--ink); stroke-width: 2; }
   #pad { touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; }
-  #pad .art * { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
-  #pad .art .in { stroke: var(--panel-edge); stroke-width: 1.2; }
-  #pad .tick { fill: var(--panel-edge); }
+  #pad .art path, #pad .art rect, #pad .art ellipse { stroke-linejoin: round; stroke-linecap: round; }
+  #pad .shadow { fill: var(--ink); opacity: .12; stroke: none; }
+  #pad .body { fill: #a5c8d4; stroke: var(--ink); stroke-width: 2.4; }
+  #pad .deck { fill: #c7dde5; stroke: none; }
+  #pad .slot { fill: var(--ink); stroke: none; }
+  #pad .mouth { fill: #1d2326; stroke: none; }
+  #pad .eye .can { fill: #e8ecea; stroke: var(--ink); stroke-width: 1.8; }
+  #pad .eye .rim { fill: #f6f8f7; stroke: var(--ink); stroke-width: 1.8; }
+  #pad .eye .hole { fill: #1d2326; stroke: none; }
+  #pad .base { fill: #0e1214; }
   #pad .knob { cursor: grab; }
-  #pad .knob circle { fill: var(--ink); stroke: var(--ink); stroke-width: 2; transition: fill .15s; }
-  #pad .knob .ring { fill: none; stroke: var(--panel); stroke-opacity: .35; stroke-width: 1.2; }
-  #pad .knob .dot { fill: var(--panel); stroke: none; }
-  #pad .knob.on circle:first-child { fill: var(--active); stroke: var(--dark-blue); }
+  #pad .knob .drop { fill: #000; opacity: .18; }
+  #pad .knob .top { fill: #1d2326; transition: fill .15s; }
+  #pad .knob.on .top { fill: var(--active); }
+  #pad .knob .gloss { fill: #fff; opacity: .22; }
   #pad .knob:focus-visible { outline: none; }
-  #pad .knob:focus-visible circle:first-child { stroke: var(--lime); stroke-width: 4; }
+  #pad .knob:focus-visible .top { stroke: var(--lime); stroke-width: 4; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; }
   button.act {
     flex: 1 1 0; min-width: 0; font: 600 13px/1 var(--body); padding: 10px 12px; border-radius: 8px;

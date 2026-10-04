@@ -718,23 +718,57 @@ async function main() {
     return `M${pt(r1, a0)} A${r1},${r1} 0 0 ${sw} ${pt(r1, a1)} L${pt(r1 - 6, a1)} L${pt((r1 + r2) / 2, a1 + (up ? 12 : -12))} ` +
       `L${pt(r2 + 6, a1)} L${pt(r2, a1)} A${r2},${r2} 0 0 ${1 - sw} ${pt(r2, a0)} Z`;
   }
-  // Stewy from above as line art (head up): hexagon body, two ultrasonic sensors on the head side.
-  // The joystick knob is drawn on top; it sticks where it is left, at the centre (stand) or on
-  // one of the ring positions (a walking direction).
-  const RING = 44, KNOB = 36, DEAD = 18;
-  function hexPts(r) {
-    return Array.from({ length: 6 }, (_, i) => {
-      const a = (60 * i * Math.PI) / 180; return `${(r * Math.cos(a)).toFixed(1)},${(r * Math.sin(a)).toFixed(1)}`;
-    }).join(" ");
+  // Stewy from above, flat illustration (head up). Settings tuned in the joystick editor.
+  // The knob sits on a base of the same size; it sticks where it is left, at the centre (stand)
+  // or on one of the ring positions (a walking direction), uncovering part of the base.
+  const PAD = { a: 108, b: 70, corner: 18, fillet: 13, eyeW: 23, eyeGap: 25.5, eyeDy: -5, eyeH: 12,
+    mouthW: 18, mouthY: 5, mouthH: 5, knob: 32, ring: 30 };
+  const RING = PAD.ring, KNOB = PAD.knob, DEAD = 12;
+  // hexagon whose sides alternate long (front and every other side) and short, all angles 120 deg
+  function padBody() {
+    const L = [PAD.a, PAD.b, PAD.a, PAD.b, PAD.a, PAD.b], P = [[0, 0]];
+    for (let i = 0; i < 5; i++) { const t = (60 * i * Math.PI) / 180; P.push([P[i][0] + L[i] * Math.cos(t), P[i][1] + L[i] * Math.sin(t)]); }
+    const cx = P.reduce((s, p) => s + p[0], 0) / 6, cy = P.reduce((s, p) => s + p[1], 0) / 6;
+    return P.map(([x, y]) => [x - cx, y - cy]);
   }
-  function renderPad() {
-    let s = `<g class="art"><rect x="-44" y="-104" width="30" height="30" rx="4"/><rect x="14" y="-104" width="30" height="30" rx="4"/>` +
-      `<ellipse cx="-29" cy="-104" rx="15" ry="5"/><ellipse cx="29" cy="-104" rx="15" ry="5"/>` +
-      `<polygon points="${hexPts(88)}"/><polygon class="in" points="${hexPts(76)}"/></g>`;
-    dirs().forEach((d) => {
-      const [ux, uy] = toPad(d);
-      s += `<circle class="tick" cx="${(ux * RING).toFixed(1)}" cy="${(uy * RING).toFixed(1)}" r="2.5"/>`;
+  function insetPoly(P, d) {
+    const n = P.length, ls = P.map((p, i) => {
+      const q = P[(i + 1) % n], dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy);
+      return { p: [p[0] - (dy / l) * d, p[1] + (dx / l) * d], v: [dx / l, dy / l] };
     });
+    return ls.map((m, i) => {
+      const k = ls[(i + n - 1) % n], det = k.v[0] * -m.v[1] - k.v[1] * -m.v[0];
+      const t = ((m.p[0] - k.p[0]) * -m.v[1] - (m.p[1] - k.p[1]) * -m.v[0]) / det;
+      return [k.p[0] + k.v[0] * t, k.p[1] + k.v[1] * t];
+    });
+  }
+  function roundedPoly(P, r) {
+    const n = P.length, f = (v) => v.toFixed(1);
+    return P.map((p, i) => {
+      const a = P[(i + n - 1) % n], b = P[(i + 1) % n];
+      const ta = Math.min(0.45, r / Math.hypot(a[0] - p[0], a[1] - p[1])), tb = Math.min(0.45, r / Math.hypot(b[0] - p[0], b[1] - p[1]));
+      return `${i ? "L" : "M"}${f(p[0] + (a[0] - p[0]) * ta)},${f(p[1] + (a[1] - p[1]) * ta)} ` +
+        `Q${f(p[0])},${f(p[1])} ${f(p[0] + (b[0] - p[0]) * tb)},${f(p[1] + (b[1] - p[1]) * tb)}`;
+    }).join(" ") + " Z";
+  }
+  function padEye(cx, y) {                            // a short ultrasonic can: body, rim and dark mouth
+    const w = PAD.eyeW, h = PAD.eyeH, ry = w / 3;
+    return `<g class="eye"><path class="can" d="M${cx - w},${y} L${cx - w},${y + h} A${w},${ry} 0 0 0 ${cx + w},${y + h} L${cx + w},${y} Z"/>
+      <ellipse class="rim" cx="${cx}" cy="${y}" rx="${w}" ry="${ry}"/><ellipse class="hole" cx="${cx}" cy="${y}" rx="${w - 4.2}" ry="${ry - 1.8}"/></g>`;
+  }
+  function padArt() {
+    const P = padBody(), top = Math.min(...P.map((p) => p[1])), bottom = Math.max(...P.map((p) => p[1]));
+    const eyeY = top + PAD.eyeDy, mouthX = -PAD.mouthW / 2;
+    return `<g class="art"><path class="shadow" transform="translate(2.5 5)" d="${roundedPoly(P, PAD.corner)}"/>
+      <path class="body" d="${roundedPoly(P, PAD.corner)}"/>
+      <path class="deck" d="${roundedPoly(insetPoly(P, PAD.fillet), Math.max(0, PAD.corner - PAD.fillet + 4))}"/>
+      <rect class="slot" x="-9" y="${(bottom - 9).toFixed(1)}" width="18" height="5" rx="2.5"/>
+      <rect class="mouth" x="${mouthX}" y="${(top + PAD.mouthY).toFixed(1)}" width="${PAD.mouthW}" height="${PAD.mouthH}" rx="${PAD.mouthH / 2}"/>
+      ${padEye(-PAD.eyeGap, eyeY)}${padEye(PAD.eyeGap, eyeY)}</g>`;
+  }
+  const PAD_ART = padArt();
+  function renderPad() {
+    let s = PAD_ART + `<circle class="base" r="${KNOB}"/>`;
     [[1, "A", "counter-clockwise"], [-1, "D", "clockwise"]].forEach(([sg, key, name]) => {
       const on = mode.kind === "turn" && mode.dir === sg, a = sg > 0 ? 220 : -40;
       const tx = 134 * Math.cos((a * Math.PI) / 180), ty = 134 * Math.sin((a * Math.PI) / 180);
@@ -747,7 +781,7 @@ async function main() {
     s += `<g class="knob${walking ? " on" : ""}" id="knob" transform="translate(${(kx * RING).toFixed(1)} ${(ky * RING).toFixed(1)})"
       tabindex="0" role="slider" aria-label="Walking joystick: Left and Right arrows pick a direction, Down returns to centre"
       aria-valuetext="${where}">
-      <circle r="${KNOB}"/><circle class="ring" r="${KNOB - 9}"/><circle class="dot" r="2.2"/></g>`;
+      <circle class="drop" cx="2" cy="4" r="${KNOB}"/><circle class="top" r="${KNOB}"/><circle class="gloss" cx="${-KNOB * 0.28}" cy="${-KNOB * 0.34}" r="${KNOB * 0.28}"/></g>`;
     pad.innerHTML = s;
     $("#hud-policy").textContent = mode.kind === "walk"
       ? (fromHead(dirs()[mode.k]) ? `walk ${fromHead(dirs()[mode.k])}° from head` : "walk toward head")
