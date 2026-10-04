@@ -314,7 +314,6 @@ async function main() {
   // ---- controller state ----
   let mode = { kind: "stand" }, phase = 0, filt = new Float64Array(6), simTime = 0;
   let servos, target = new Float64Array(6);
-  const loads = new Float64Array(6);
   const readQ = () => { const q = data.qpos; return jq.map((a) => q[a]); };
   const readQd = () => { const v = data.qvel; return jv.map((a) => v[a]); };
   function resetRobot() {
@@ -376,7 +375,6 @@ async function main() {
     } else {
       target = new Float64Array(6);
     }
-    loads.fill(0);
     for (let s = 0; s < sub; s++) {
       if (deskOff !== deskGoal) {
         const step = DESK_SPEED * physDt;
@@ -385,7 +383,7 @@ async function main() {
       }
       const tau = servos.torque(target, readQ(), readQd());
       const ctrl = data.ctrl;
-      for (let i = 0; i < 6; i++) { ctrl[i] = tau[i]; loads[i] += Math.abs(tau[i]) / sub; }
+      for (let i = 0; i < 6; i++) { ctrl[i] = tau[i]; }
       mujoco.mj_step(model, data);
     }
     simTime += ctrlDt;
@@ -693,32 +691,8 @@ async function main() {
 
   // ---- readouts ----
   const history = [];
-  const servoEls = meta.servo_joints.map((n, i) => {
-    const row = document.createElement("div");
-    row.className = "servo";
-    row.innerHTML = `<span class="n">S${i + 1}</span><span class="bar"><i></i></span><span class="a">0°</span>`;
-    $("#servos").append(row);
-    return { bar: row.querySelector("i"), ang: row.querySelector(".a") };
-  });
   function readouts() {
     $("#hud-time").textContent = simTime.toFixed(1) + " s";
-    if (history.length > 10) {
-      const a = history[0], b = history[history.length - 1], dt = b[0] - a[0];
-      let turn = 0;
-      for (let i = 1; i < history.length; i++) {
-        let d = history[i][3] - history[i - 1][3];
-        d = Math.atan2(Math.sin(d), Math.cos(d)); turn += d;
-      }
-      $("#ro-speed").textContent = (Math.hypot(b[1] - a[1], b[2] - a[2]) / dt * 1000).toFixed(0);
-      $("#ro-turn").textContent = ((turn / dt) * 180 / Math.PI).toFixed(0);
-    }
-    const q = readQ();
-    servoEls.forEach((s, i) => {
-      const f = Math.min(1, loads[i] / MG.effort);
-      s.bar.style.width = (f * 100).toFixed(0) + "%";
-      s.bar.classList.toggle("hot", f > 0.9);
-      s.ang.textContent = ((q[i] * 180) / Math.PI).toFixed(0) + "°";
-    });
   }
 
   // ---- direction pad (top view, head up). Walk directions measured in MuJoCo, base frame ----
@@ -789,31 +763,6 @@ async function main() {
   pad.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(e.target); } });
   $("#btn-stop").addEventListener("click", () => setMode({ kind: "stand" }));
   $("#btn-reset").addEventListener("click", () => { resetRobot(); setMode({ kind: "stand" }); });
-  // terrain sliders: height (peak-to-peak mm) and feature size (cm) per noise layer
-  const terr = $("#terrain");
-  const fmt = { h: (v) => `${v} mm`, s: (v) => `${v} cm` };
-  terr.innerHTML = LEVELS.map((L, i) => `<div class="lvl"><span class="lvl-name">${L.label}</span>
-      <label class="sl"><span>height</span><input type="range" min="0" max="${L.hMax}" step="${L.hMax > 10 ? 1 : 0.5}"
-        value="${L.h}" data-i="${i}" data-k="h" aria-label="${L.label} height in mm"><output>${fmt.h(L.h)}</output></label>
-      <label class="sl"><span>size</span><input type="range" min="${L.sMin}" max="${L.sMax}" step="1"
-        value="${L.s}" data-i="${i}" data-k="s" aria-label="${L.label} feature size in cm"><output>${fmt.s(L.s)}</output></label>
-    </div>`).join("");
-  const groundUnderRobot = () => footprintTop(data.qpos[0], data.qpos[1]);
-  terr.addEventListener("input", (e) => {
-    const el = e.target;
-    if (el.type !== "range") return;
-    const before = groundUnderRobot();
-    LEVELS[+el.dataset.i][el.dataset.k] = +el.value;
-    el.nextElementSibling.textContent = fmt[el.dataset.k](+el.value);
-    terrainChanged(before);
-  });
-  $("#btn-seed").addEventListener("click", () => { const before = groundUnderRobot(); seed++; reseed(); terrainChanged(before); });
-  $("#btn-flat").addEventListener("click", () => {
-    const before = groundUnderRobot();
-    LEVELS.forEach((L) => { L.h = 0; });
-    terr.querySelectorAll('input[data-k="h"]').forEach((el) => { el.value = 0; el.nextElementSibling.textContent = fmt.h(0); });
-    terrainChanged(before);
-  });
   let rate = 1;
   $("#sel-rate").addEventListener("change", (e) => { rate = +e.target.value; $("#hud-rate").textContent = `${rate}×`; });
   window.addEventListener("keydown", (e) => {

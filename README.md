@@ -15,7 +15,6 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
 - **Turn in place** either way. Clockwise is the mirror image of counter-clockwise.
 - **Show or hide the head** with the Head checkbox. It's drawn only; the simulated robot's mass doesn't include it.
 - **Walk off the desk.** Stewy starts on an oak desk top (6 ft × 25 in × 1 in) on a standing-desk frame, 1.42 m up. Walk off any edge and it falls to the floor; Reset puts it back on the desk.
-- **Change the ground**: hills, bumps and grit sliders. Every policy was trained on flat ground, blind, so this shows how far that carries.
 
 | Input | Action |
 |---|---|
