@@ -161,17 +161,67 @@
   .sl input { width: 100%; margin: 0; accent-color: var(--accent); }
   .sl input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .sl output { font: 400 11px var(--mono); text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+  html, body { overscroll-behavior: none; }
+  html, body { height: 100%; height: 100dvh; }
+  body { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .rail { -webkit-user-select: none; user-select: none; }
+  .settings > summary {
+    cursor: pointer; font: 600 11px/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); padding: 8px 0; list-style-position: inside;
+  }
+  .settings[open] > summary { margin-bottom: 6px; }
+  .settings > * + * { margin-top: 10px; }
+  .touch-tip { display: none; margin: 0; font-size: 12px; color: var(--ink-soft); }
+  #pad .pulse { fill: none; stroke: var(--accent); stroke-width: 3; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  #pad.nudge .pulse { animation: nudge 1.8s ease-out infinite; }
+  @keyframes nudge { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(1.7); } }
+  @media (hover: none) and (pointer: coarse) {
+    .keys { display: none; }
+    .touch-tip { display: block; }
+    button.act { min-height: 48px; font-size: 14px; }
+  }
+  .load { height: 6px; width: min(240px, 70vw); margin: 12px auto 0; border-radius: 3px; background: var(--track); overflow: hidden; }
+  .load i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .15s; }
+  /* phones, portrait: the 3D view fills the screen and the controls are a sheet over its lower part,
+     so the joystick never scrolls out of reach while you steer */
   @media (max-width: 760px) {
-    .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(300px, 55%) auto; }
-    .rail { border-left: 0; border-top: 1px solid var(--panel-edge); padding-inline: 16px; }
-    #pad { width: 260px; height: 260px; }
+    .app { display: block; position: relative; height: 100%; }
+    .stage { position: absolute; inset: 0; }
+    .hud { top: 12px; bottom: auto; left: 12px; }
+    .rail {
+      position: absolute; left: 0; right: 0; bottom: 0; max-height: 75%;
+      border-left: 0; border-top: 1px solid var(--panel-edge); border-radius: 16px 16px 0 0;
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+      box-shadow: 0 -4px 16px rgba(3, 87, 114, 0.12);
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); gap: 8px;
+    }
+    .pad-hint { font-size: 13px; margin-bottom: 0; }
+    .pad-arrow { height: 18px; margin-top: 2px; }
+    #pad { width: min(210px, 52vw); height: min(210px, 52vw); }
+    button.act { min-height: 44px; }
+  }
+  /* phones, landscape: view on the left, controls on the right */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .app { display: grid; grid-template-columns: minmax(0, 1fr) 250px; position: static; }
+    .stage { position: relative; inset: auto; }
+    .hud { top: auto; bottom: 12px; }
+    .rail {
+      position: static; max-height: none; border-radius: 0; border-top: 0; border-left: 1px solid var(--panel-edge);
+      background: var(--panel); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none;
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); gap: 6px; overflow-y: auto;
+    }
+    .pad-hint { font-size: 12px; }
+    .pad-arrow { display: none; }
+    #pad { width: min(200px, calc(100dvh - 150px)); height: min(200px, calc(100dvh - 150px)); }
+    button.act { min-height: 40px; padding-block: 6px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
 <div class="app">
   <div class="stage" id="stage">
-    <div class="overlay" id="overlay"><p id="overlay-text">Loading the physics engine…</p></div>
+    <div class="overlay" id="overlay"><div><p id="overlay-text">Loading Stewy…</p><div class="load" id="load" hidden><i id="load-bar"></i></div></div></div>
     <div class="hud" aria-live="polite">
       <span class="chip">sim <b id="hud-time">0.0 s</b></span>
       <span class="chip">doing <b id="hud-policy">stand</b></span>
@@ -179,7 +229,7 @@
     </div>
   </div>
 
-  <aside class="rail">
+  <aside class="rail" id="rail">
     <section>
       <p class="pad-hint">Move the joystick to make Stewy walk around
         <svg class="pad-arrow" viewBox="0 0 24 28" aria-hidden="true"><path d="M12 2 V21 M4.5 14 L12 22 L19.5 14"/></svg></p>
@@ -196,6 +246,8 @@
     
     
     
+    <details class="settings" id="settings">
+      <summary>Settings</summary>
     <div class="opts">
       <label class="chk"><input type="checkbox" id="chk-head" checked> Head</label>
       <label for="sel-rate">Speed</label>
@@ -213,13 +265,15 @@
 
     <p class="keys">Arrows or <kbd>W</kbd> <kbd>Q</kbd> <kbd>E</kbd> walk (12 directions) ·
       <kbd>A</kbd> <kbd>D</kbd> turn · <kbd>S</kbd> stand · <kbd>R</kbd> reset</p>
+    <p class="touch-tip">Double-tap the 3D view to make Stewy stand.</p>
+    </details>
   </aside>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script>window.ASSET_V = "fec8a5b6f6";</script>
-<script type="module" src="app.js?v=03db28e61c"></script>
+<script>window.ASSET_V = "3ce915d237"; window.ASSET_SIZES = {"vendor/mujoco.wasm.gz": 2530858, "stewy.xml": 15229, "stewy_meta.json": 688, "meshes/stewy_mesh_pack.json": 5444975, "policies/dir_b_away.json": 464065, "policies/dir_c_steer.json": 463124, "policies/manifest.json": 656, "policies/spin_calm_legs.json": 483394, "policies/walk_smoother.json": 465898};</script>
+<script type="module" src="app.js?v=b7f76b2768"></script>
 
 </body>
 </html>

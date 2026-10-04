@@ -46,7 +46,7 @@ Then open http://localhost:8733.
 `build/` regenerates everything in `web/`:
 
 - `build_mjcf.py`: `stewy_usd.json` (dumped from the Isaac USD) → `web/stewy.xml` and `web/stewy_meta.json`.
-- `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab, including earlier walkers and turners kept for comparison) → compact `web/policies/` for the policies the page ships (`SHIP`), the manifest, the mesh pack and `web/index.html`.
+- `build_web.py`: `build/policies/*.json` (full-precision exports from Isaac Lab, including earlier walkers and turners kept for comparison) → compact `web/policies/` for the policies the page ships (`SHIP`), the manifest, the mesh pack, a gzipped copy of the physics engine (`web/vendor/mujoco.wasm.gz`, 2.5 MB against 10 MB; the page unpacks it in the browser) and `web/index.html`.
 - `stewy_usd_meshes.py` (runs in Isaac Lab): the robot's visual meshes from the USD, coloured by part name with `palette.json` (`--palette build/palette.json --out_dir web/meshes`).
 - `build_urdf_parts.py`: parts from the Onshape URDF export that the Isaac USD lacks: the head (shown or hidden by the page's Head checkbox) and the ball bearings. The URDF is in its CAD pose, so each part is placed in a sim body's frame by matching shared geometry (the six top bearings against the plate's hinge anchors, leg by leg). `python build_urdf_parts.py --urdf "<...>/main_assembly"`.
 - `build_desk.py`: the desk frame (`desk_base.stl`, an Onshape export) as a black mesh; the oak top, its collision box and the fall-collision boxes on the robot are added by the page (`DESK`, `FALL_GEOMS` in `app.js`).

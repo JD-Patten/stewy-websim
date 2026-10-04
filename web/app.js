@@ -10,7 +10,9 @@ const say = (msg, error = false) => {
   overlay.hidden = !msg;
   overlay.classList.toggle("error", error);
   $("#overlay-text").textContent = msg || "";
+  if (!msg || error) $("#load").hidden = true;
 };
+const buzz = () => { try { navigator.vibrate && navigator.vibrate(8); } catch (e) { /* not supported (iOS) */ } };
 
 // ---- measured MG90S (servo_test_bench/isaac_model/params/mg90s_fleet.json) --------------
 const MG = { kp: 0.815225204826973, kd: 0.04367582236525295, sat: 0.07508598256940573,
@@ -234,16 +236,43 @@ function perlin(seed) {                                  // Ken Perlin's improve
 }
 
 // ---- boot ---------------------------------------------------------------------------------
-async function fetchOk(url, kind) {
+// Downloads report their progress against the file sizes the build wrote into ASSET_SIZES
+// (what the page fetches, as bytes read from the network). Without it the bar just stays empty.
+const SIZES = window.ASSET_SIZES || {};
+const LOAD_TOTAL = Object.values(SIZES).reduce((a, b) => a + b, 0);
+let loadedBytes = 0;
+function noteBytes(n) {
+  loadedBytes += n;
+  if (!LOAD_TOTAL || overlay.classList.contains("error")) return;
+  const f = Math.min(1, loadedBytes / LOAD_TOTAL);
+  $("#load").hidden = false;
+  $("#load-bar").style.width = (f * 100).toFixed(0) + "%";
+  $("#overlay-text").textContent = `Loading Stewy… ${(f * 100).toFixed(0)}%`;
+}
+async function fetchOk(url, kind, gunzip = false) {
   const r = await fetch(window.ASSET_V ? `${url}?v=${window.ASSET_V}` : url);
   if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-  return kind === "json" ? r.json() : kind === "text" ? r.text() : r.arrayBuffer();
+  let body = r.body;
+  if (body && window.TransformStream) {
+    body = body.pipeThrough(new TransformStream({ transform(chunk, ctl) { noteBytes(chunk.byteLength); ctl.enqueue(chunk); } }));
+    if (gunzip) body = body.pipeThrough(new DecompressionStream("gzip"));
+  } else if (gunzip) throw new Error("no stream support");
+  const res = body ? new Response(body) : r;
+  return kind === "json" ? res.json() : kind === "text" ? res.text() : res.arrayBuffer();
+}
+// the physics engine is 10 MB raw but 2.5 MB gzipped: take the gzipped copy and unpack it here
+async function fetchWasm() {
+  if (window.DecompressionStream && SIZES["vendor/mujoco.wasm.gz"]) {
+    try { return await fetchOk("vendor/mujoco.wasm.gz", "bin", true); } catch (e) { console.warn("gzipped wasm failed, using the plain file", e); }
+  }
+  return fetchOk("vendor/mujoco.wasm", "bin");
 }
 
 async function main() {
   if (!window.THREE) throw new Error("three.js did not load (the CDN script was blocked or offline).");
+  if (matchMedia("(min-width: 761px) and (min-height: 501px)").matches) $("#settings").open = true;
   const [wasmBinary, xml, meta, meshPack, manifest] = await Promise.all([
-    fetchOk("vendor/mujoco.wasm", "bin"), fetchOk("stewy.xml", "text"), fetchOk("stewy_meta.json", "json"),
+    fetchWasm(), fetchOk("stewy.xml", "text"), fetchOk("stewy_meta.json", "json"),
     fetchOk("meshes/stewy_mesh_pack.json", "json"),
     fetchOk("policies/manifest.json", "json")]);
   // every GA-residual walker in the manifest can be picked; walk_smoother (the robot's walker) first
@@ -649,13 +678,20 @@ async function main() {
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
   new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
+  const rail = $("#rail");
   function resize() {
-    const r = stage.getBoundingClientRect();
-    renderer.setSize(Math.max(1, r.width), Math.max(1, r.height), false);
+    const r = stage.getBoundingClientRect(), w = Math.max(1, r.width), h = Math.max(1, r.height);
+    renderer.setSize(w, h, false);
     renderer.domElement.style.width = "100%"; renderer.domElement.style.height = "100%";
-    camera.aspect = Math.max(1, r.width) / Math.max(1, r.height);
+    camera.aspect = w / h;
+    // tall, narrow screens: widen the field of view (up to 60 deg) so the robot isn't cropped at the sides
+    camera.fov = Math.min(60, (2 * Math.atan(Math.tan((19 * Math.PI) / 180) * Math.max(1, 1.2 / camera.aspect)) * 180) / Math.PI);
+    // on phones in portrait the controls sheet covers the bottom of the view: centre the scene above it
+    const covered = getComputedStyle(rail).position === "absolute" ? Math.max(0, r.bottom - rail.getBoundingClientRect().top) : 0;
+    if (covered > 0) camera.setViewOffset(w, h, 0, covered / 2, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
   }
+  new ResizeObserver(resize).observe(rail);
   new ResizeObserver(resize).observe(stage);
   resize();
 
@@ -781,7 +817,7 @@ async function main() {
     s += `<g class="knob${walking ? " on" : ""}" id="knob" transform="translate(${(kx * RING).toFixed(1)} ${(ky * RING).toFixed(1)})"
       tabindex="0" role="slider" aria-label="Walking joystick: Left and Right arrows pick a direction, Down returns to centre"
       aria-valuetext="${where}">
-      <circle class="drop" cx="2" cy="4" r="${KNOB}"/><circle class="top" r="${KNOB}"/><circle class="gloss" cx="${-KNOB * 0.28}" cy="${-KNOB * 0.34}" r="${KNOB * 0.28}"/></g>`;
+      <circle class="pulse" r="${KNOB}"/><circle class="drop" cx="2" cy="4" r="${KNOB}"/><circle class="top" r="${KNOB}"/><circle class="gloss" cx="${-KNOB * 0.28}" cy="${-KNOB * 0.34}" r="${KNOB * 0.28}"/></g>`;
     pad.innerHTML = s;
     $("#hud-policy").textContent = mode.kind === "walk"
       ? (fromHead(dirs()[mode.k]) ? `walk ${fromHead(dirs()[mode.k])}° from head` : "walk toward head")
@@ -791,6 +827,7 @@ async function main() {
   const pick = (el) => {
     const g = el.closest(".dir");
     if (!g) return;
+    buzz();
     if (g.dataset.walk !== undefined) setMode({ kind: "walk", k: +g.dataset.walk });
     else setMode({ kind: "turn", dir: +g.dataset.turn });
   };
@@ -813,9 +850,13 @@ async function main() {
   function steer(e) {
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(pad.getScreenCTM().inverse());
     const next = Math.hypot(p.x, p.y) < DEAD ? { kind: "stand" } : { kind: "walk", k: nearest(padToDeg(p.x, p.y)) };
-    if (next.kind !== mode.kind || next.k !== mode.k) setMode(next);
+    if (next.kind !== mode.kind || next.k !== mode.k) { buzz(); setMode(next); }
   }
   let dragging = false;
+  pad.classList.add("nudge");                         // pulse the knob until the first touch
+  const unNudge = () => pad.classList.remove("nudge");
+  window.addEventListener("keydown", unNudge, { once: true });
+  pad.addEventListener("pointerdown", unNudge, { once: true });
   pad.addEventListener("pointerdown", (e) => {
     if (e.target.closest(".dir")) return;
     dragging = true; pad.setPointerCapture(e.pointerId); steer(e);
@@ -824,6 +865,14 @@ async function main() {
   const endDrag = () => { dragging = false; };
   pad.addEventListener("pointerup", endDrag);
   pad.addEventListener("pointercancel", endDrag);
+  let lastTap = null;                                 // double-tap the 3D view to stand
+  renderer.domElement.addEventListener("pointerdown", (e) => { renderer.domElement._down = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener("pointerup", (e) => {
+    const d = renderer.domElement._down;
+    if (e.pointerType !== "touch" || !d || Math.hypot(e.clientX - d[0], e.clientY - d[1]) > 10) { lastTap = null; return; }
+    const now = performance.now();
+    if (lastTap && now - lastTap < 320) { lastTap = null; buzz(); setMode({ kind: "stand" }); } else lastTap = now;
+  });
   $("#btn-stop").addEventListener("click", () => setMode({ kind: "stand" }));
   $("#btn-reset").addEventListener("click", () => { resetRobot(); setMode({ kind: "stand" }); });
   let rate = 1;

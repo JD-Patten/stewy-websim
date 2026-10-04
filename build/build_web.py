@@ -79,6 +79,13 @@ for part in ("stewy_extra", "stewy_desk"):
 json.dump(dict(pieces=man, data=base64.b64encode(bin_).decode()), open(os.path.join(WEB, "meshes", "stewy_mesh_pack.json"), "w"))
 print(f"mesh pack: {os.path.getsize(os.path.join(WEB, 'meshes', 'stewy_mesh_pack.json'))/1024:.0f} KB")
 
+# the physics engine, gzipped: 10 MB -> 2.5 MB. The page unpacks it with DecompressionStream
+import gzip, shutil
+with open(os.path.join(WEB, "vendor", "mujoco.wasm"), "rb") as _src, \
+        open(os.path.join(WEB, "vendor", "mujoco.wasm.gz"), "wb") as _raw, \
+        gzip.GzipFile(filename="", mode="wb", fileobj=_raw, compresslevel=9, mtime=0) as _gz:
+    shutil.copyfileobj(_src, _gz)
+
 body = open(os.path.join(WEB, "app.html"), encoding="utf-8").read()
 # cache-bust app.js by its content, so a new page never runs a stale cached script
 import hashlib
@@ -88,9 +95,14 @@ body = body.replace('src="app.js"', f'src="app.js?v={_v}"')
 _h = hashlib.sha1()
 for _root, _dirs, _files in sorted(os.walk(WEB)):
     for _f in sorted(_files):
-        if _f.endswith((".json", ".xml", ".wasm")):
+        if _f.endswith((".json", ".xml", ".wasm", ".gz")):
             _h.update(open(os.path.join(_root, _f), "rb").read())
-body = body.replace('<script type="module" src="app.js', f'<script>window.ASSET_V = "{_h.hexdigest()[:10]}";</script>\n<script type="module" src="app.js', 1)
+# sizes of what the page downloads, so it can show a progress bar
+_sizes = {}
+for _p in ["vendor/mujoco.wasm.gz", "stewy.xml", "stewy_meta.json", "meshes/stewy_mesh_pack.json"] + \
+        ["policies/" + _f for _f in sorted(os.listdir(os.path.join(WEB, "policies"))) if _f.endswith(".json")]:
+    _sizes[_p] = os.path.getsize(os.path.join(WEB, _p))
+body = body.replace('<script type="module" src="app.js', f'<script>window.ASSET_V = "{_h.hexdigest()[:10]}"; window.ASSET_SIZES = {json.dumps(_sizes)};</script>\n<script type="module" src="app.js', 1)
 open(os.path.join(WEB, "index.html"), "w", encoding="utf-8").write(
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
