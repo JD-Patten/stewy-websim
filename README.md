@@ -20,7 +20,8 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
 |---|---|
 | Joystick (drag or tap; it stays put and snaps to 12 directions, centre = stand), or <kbd>W</kbd> <kbd>Q</kbd> <kbd>E</kbd> | Walk |
 | <kbd>A</kbd> <kbd>D</kbd> | Turn in place |
-| <kbd>S</kbd> | Stand |
+| <kbd>S</kbd> | Walk backwards |
+| <kbd>Space</kbd> | Stand |
 | <kbd>R</kbd> | Reset |
 
 ## How it works

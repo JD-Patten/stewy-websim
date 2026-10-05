@@ -356,6 +356,8 @@ async function main() {
     history.length = 0; trail.count = 0;
   }
   function setMode(m) {
+    // asking for what Stewy is already doing (a held key repeating, a re-tap) must not restart its gait
+    if (m.kind === mode.kind && m.k === mode.k && m.dir === mode.dir) return;
     mode = m; phase = 0; filt = new Float64Array(6);
     renderPad(); updateButtons();
   }
@@ -880,8 +882,11 @@ async function main() {
     const k = e.key.toLowerCase();
     const map = { w: { kind: "walk", k: nearest(DIRS[0]) }, e: { kind: "walk", k: nearest(DIRS[1]) },
       q: { kind: "walk", k: nearest(DIRS[2]) },
-      a: { kind: "turn", dir: 1 }, d: { kind: "turn", dir: -1 }, s: { kind: "stand" } };
-    if (map[k]) setMode(map[k]);
+      a: { kind: "turn", dir: 1 }, d: { kind: "turn", dir: -1 },
+      s: { kind: "walk", k: nearest(90) },              // backwards: directly away from the head
+      " ": { kind: "stand" } };
+    if (e.target.closest && e.target.closest("#pad, button") && k === " ") return;   // Space presses the focused control
+    if (map[k]) { if (k === " ") e.preventDefault(); setMode(map[k]); }
     else if (k === "r") { resetRobot(); setMode({ kind: "stand" }); }
     else if (k === "1" || k === "2" || k === "3") {
       const low = 0.0254 * 25.5 - DESK.top;

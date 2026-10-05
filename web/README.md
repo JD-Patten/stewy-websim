@@ -19,7 +19,8 @@ Stewy is a six-servo Stewart-platform walker with no sensors. This page runs it 
 |---|---|
 | Direction pad, or <kbd>W</kbd> <kbd>Q</kbd> <kbd>E</kbd> | Walk. 12 directions, every 30°. <kbd>W</kbd> walks toward the head; <kbd>Q</kbd> and <kbd>E</kbd> are 120° either side. |
 | <kbd>A</kbd> <kbd>D</kbd> | Turn in place |
-| <kbd>S</kbd> | Stand |
+| <kbd>S</kbd> | Walk backwards |
+| <kbd>Space</kbd> | Stand |
 | <kbd>R</kbd> | Reset |
 
 ## What's inside
