@@ -31,18 +31,25 @@ MENU = {"walk62": ("62 mm/s: fastest, shakiest", "walk62"),
         "omni_walk60_s7": ("47 mm/s: any direction, drifts in yaw (newest omni)", "omni60s7"),
         "dir_b_away": ("42 mm/s: away from the head (group B)", "B"),
         "dir_c_steer": ("42 mm/s: -60° steered firmware gait (group C)", "C"),
+        "walk_fss": ("63 mm/s: toward the head, fast, steady, smooth (group A)", "A"),
+        "walk_fss_b": ("64 mm/s: away from the head (group B)", "B"),
+        "walk_fss_c": ("66 mm/s: -60° between the gait axes (group C)", "C"),
         "spin_ccw": ("48°/s: first robot turner, wobbly", "robot"),
         "spin_steady": ("50°/s: steady rate", "steady"),
         "spin_plate": ("49°/s: calm plate", "calm"),
         "spin_both": ("51°/s: steady + calm", "both"),
         "spin_calm_legs": ("42°/s: calm legs, on the robot", "calmlegs")}
 
-# the three-walker set (RL Lab 2026-09-30, three directions): each group's walker covers its
-# directions by rotating (and for C, mirroring) the legs; the page combines them into 12
-GROUP = {"walk_smoother": "A", "dir_b_away": "B", "dir_c_steer": "C"}
+# the three-walker set: each group's walker covers its directions by rotating (and for C,
+# mirroring) the legs; the page combines them into 12.
+# The shipped set is the from-scratch p3x walkers (pose actions through the IK, no firmware gait):
+# A = fss-plate3x-7 c10_p3x model_2000 (-90 deg), B = p3x-directions away_p90 model_2500 (+90),
+# C = p3x-directions off_m60 model_2000 (-60; walks about -56 in Isaac). The firmware-gait set
+# (walk_smoother, dir_b_away, dir_c_steer) stays in build/policies.
+GROUP = {"walk_fss": "A", "walk_fss_b": "B", "walk_fss_c": "C"}
 
 # the policies the page ships: the three-walker set and the calm-legs turner
-SHIP = {"walk_smoother", "dir_b_away", "dir_c_steer", "spin_calm_legs"}
+SHIP = {"walk_fss", "walk_fss_b", "walk_fss_c", "spin_calm_legs"}
 for p in glob.glob(os.path.join(WEB, "policies", "*.json")):
     if os.path.splitext(os.path.basename(p))[0] not in SHIP | {"manifest"}:
         os.remove(p)

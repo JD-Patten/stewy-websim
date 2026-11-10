@@ -29,6 +29,6 @@ Stewy is a six-servo Stewart-platform walker with no sensors. This page runs it 
 
 **Servos:** the measured MG90S model runs every 2 ms physics step: the torque–speed curve, stick-slip and a 6.7 ms delay.
 
-**Policies:** walking in 12 directions comes from three walkers (A toward the head, B away from it on a reversed firmware gait, C 60° off-axis on a steered gait), each reused by Stewy's exact 3-fold and mirror symmetry. They walk about 40–45 mm/s here (42–43 in Isaac Lab). Turning in place uses the calm-legs turner (42 °/s in Isaac Lab, about 41 here); clockwise is its mirror image.
+**Policies:** walking in 12 directions comes from three walkers (A toward the head, B away from it, C 60° off-axis), each reused by Stewy's exact 3-fold and mirror symmetry. All three were learned from scratch with one recipe, with no firmware gait. They walk about 55–66 mm/s here (63–66 in Isaac Lab). Turning in place uses the calm-legs turner (42 °/s in Isaac Lab, about 41 here); clockwise is its mirror image.
 
 **Rebuilding:** everything is regenerated from `../build` (see `build_mjcf.py`, `build_web.py`).

@@ -1,21 +1,5 @@
 [
  {
-  "name": "dir_b_away",
-  "label": "42 mm/s: away from the head (group B)",
-  "short": "B",
-  "mode": "forward",
-  "action": "ga_residual",
-  "group": "B"
- },
- {
-  "name": "dir_c_steer",
-  "label": "42 mm/s: -60\u00b0 steered firmware gait (group C)",
-  "short": "C",
-  "mode": "forward",
-  "action": "ga_residual",
-  "group": "C"
- },
- {
   "name": "spin_calm_legs",
   "label": "42\u00b0/s: calm legs, on the robot",
   "short": "calmlegs",
@@ -23,11 +7,27 @@
   "action": "pose_ik"
  },
  {
-  "name": "walk_smoother",
-  "label": "43 mm/s: smoothest, on the robot",
-  "short": "smoothest",
+  "name": "walk_fss",
+  "label": "63 mm/s: toward the head, fast, steady, smooth (group A)",
+  "short": "A",
   "mode": "forward",
-  "action": "ga_residual",
+  "action": "pose_ik",
   "group": "A"
+ },
+ {
+  "name": "walk_fss_b",
+  "label": "64 mm/s: away from the head (group B)",
+  "short": "B",
+  "mode": "forward",
+  "action": "pose_ik",
+  "group": "B"
+ },
+ {
+  "name": "walk_fss_c",
+  "label": "66 mm/s: -60\u00b0 between the gait axes (group C)",
+  "short": "C",
+  "mode": "forward",
+  "action": "pose_ik",
+  "group": "C"
  }
 ]

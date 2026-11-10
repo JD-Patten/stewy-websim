@@ -275,10 +275,9 @@ async function main() {
     fetchWasm(), fetchOk("stewy.xml", "text"), fetchOk("stewy_meta.json", "json"),
     fetchOk("meshes/stewy_mesh_pack.json", "json"),
     fetchOk("policies/manifest.json", "json")]);
-  // every GA-residual walker in the manifest can be picked; walk_smoother (the robot's walker) first
-  // any-direction (omni, pose IK) walkers join the list after them. The group B and C walkers
-  // only walk as part of the three-walker set, which follows the robot's walker
-  const walkMs = manifest.filter((m) => m.action === "ga_residual" || m.mode === "omni");
+  // walkers: fixed-direction ones (a firmware-gait residual or pose actions through the IK) and
+  // any-direction (omni) ones. The A, B and C walkers only walk as part of the three-walker set
+  const walkMs = manifest.filter((m) => m.mode === "forward" || m.mode === "omni");
   const pol = Object.fromEntries(await Promise.all(
     walkMs.map(async (m) => [m.name, await fetchOk(`policies/${m.name}.json`, "json")])));
   const groupMs = walkMs.filter((m) => m.group).sort((a, b) => a.group.localeCompare(b.group));
@@ -287,7 +286,7 @@ async function main() {
   const walkers = [{ name: "three_walkers", combo: true, base: groupMs[0].name }];
   const walkPs = walkers.map((m) => pol[m.combo ? m.base : m.name]);
   // turn-in-place policies (pose IK); the robot's own turn first
-  const turners = manifest.filter((m) => m.action === "pose_ik" && m.mode !== "omni")
+  const turners = manifest.filter((m) => m.mode === "spin")
     .sort((a, b) => (b.name === "spin_calm_legs") - (a.name === "spin_calm_legs"));
   const spinPs = await Promise.all(turners.map((m) => fetchOk(`policies/${m.name}.json`, "json")));
   const meshMan = meshPack.pieces;
@@ -386,13 +385,18 @@ async function main() {
       const obs = [ob.forward_speed * Math.cos(th) * ob.command_scale, ob.forward_speed * Math.sin(th) * ob.command_scale,
         ...clocks(ob.clock_periods)];
       let a = c.net.act(obs);
-      if (P.action.filter_alpha) {           // low-passed corrections (smooth-walking recipe)
+      if (P.action.filter_alpha) {           // low-passed actions (3 Hz filter / smooth-walking recipe)
         for (let i = 0; i < 6; i++) filt[i] += P.action.filter_alpha * (a[i] - filt[i]);
         a = Array.from(filt);
       }
-      const tab = P.action.table, idx = Math.round(phase / ctrlDt) % tab.length;
-      const res = P.action.residual_rad, lim = P.action.servo_limit;
-      const t = tab[idx].map((v, i) => Math.min(lim, Math.max(-lim, v + a[i] * (Array.isArray(res) ? res[i] : res))));
+      let t;
+      if (P.action.kind === "pose_ik") {     // from-scratch walker: a top-plate pose through the IK
+        t = ik(P.action.pose_center.map((c0, i) => c0 + a[i] * P.action.pose_scale[i]));
+      } else {                               // firmware gait plus learned corrections
+        const tab = P.action.table, idx = Math.round(phase / ctrlDt) % tab.length;
+        const res = P.action.residual_rad, lim = P.action.servo_limit;
+        t = tab[idx].map((v, i) => Math.min(lim, Math.max(-lim, v + a[i] * (Array.isArray(res) ? res[i] : res))));
+      }
       target = sym(t, c.k, c.m);
       phase = (phase + ctrlDt) % ob.gait_period_s;
     } else if (mode.kind === "turn") {

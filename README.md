@@ -9,9 +9,11 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
 ## What you can do
 
 - **Walk in 12 directions**, every 30°. Three walking policies cover them all: Stewy is exactly 3-fold and mirror symmetric, so each policy is reused by rotating its servo commands 120° and mirroring them.
-  - **A** walks toward the head. It's the smoothest walker, and the one on the real robot.
-  - **B** walks away from the head, on a time-reversed firmware gait.
-  - **C** walks 60° off the head axis, on a steered firmware gait. Mirroring gives it six directions.
+  - **A** walks toward the head.
+  - **B** walks away from the head.
+  - **C** walks 60° off the head axis. Mirroring gives it six directions.
+
+  All three were learned from scratch with the same recipe (no firmware gait): they move the top plate through the inverse kinematics, and are rewarded for distance and penalised for drift, uneven speed and shaking the top plate. They walk about 63–66 mm/s in Isaac Lab and about 55–66 here.
 - **Turn in place** either way. Clockwise is the mirror image of counter-clockwise.
 - **Show or hide the head** with the Head checkbox. It's drawn only; the simulated robot's mass doesn't include it.
 - **Walk off the desk.** Stewy starts on an oak desk top (6 ft × 25 in × 1 in) on a standing-desk frame, 1.42 m up. Walk off any edge and it falls to the floor; Reset puts it back on the desk.
@@ -28,7 +30,7 @@ The robot's firmware and hardware live in [JD-Patten/stewy](https://github.com/J
 
 - **Model** (`web/stewy.xml`): built from the Isaac Lab USD articulation, with 20 bodies, the 5 closed leg loops as `connect` constraints, and 12 contact spheres. The foot and arm friction come from pull tests on the real robot.
 - **Servos:** a model of the MG90S measured on a test bench runs every 2 ms physics step: its torque–speed limit, stick-slip deadband and 6.7 ms delay.
-- **Policies** (`web/policies/*.json`): small MLPs that take a gait clock and a command, and output corrections to the firmware gait table (walkers) or a top-plate pose solved through the firmware's inverse kinematics (turners). The page reproduces the training environment's observation and action path exactly. Each exported network is checked against PyTorch to about 1e-5.
+- **Policies** (`web/policies/*.json`): small MLPs that take a gait clock and a command, and output a top-plate pose solved through the firmware's inverse kinematics. (Earlier walkers output corrections to the firmware gait table instead; the page still runs that kind.) The page reproduces the training environment's observation and action path exactly. Each exported network is checked against PyTorch to about 1e-5.
 - **Transfer:** the policies were never trained in MuJoCo. They walk about 40–45 mm/s here, against about 42–43 mm/s in Isaac Lab, and turn at about 40–50°/s.
 
 ## Running it locally
@@ -51,7 +53,7 @@ Then open http://localhost:8733.
 - `stewy_usd_meshes.py` (runs in Isaac Lab): the robot's visual meshes from the USD, coloured by part name with `palette.json` (`--palette build/palette.json --out_dir web/meshes`).
 - `build_urdf_parts.py`: parts from the Onshape URDF export that the Isaac USD lacks: the head (shown or hidden by the page's Head checkbox) and the ball bearings. The URDF is in its CAD pose, so each part is placed in a sim body's frame by matching shared geometry (the six top bearings against the plate's hinge anchors, leg by leg). `python build_urdf_parts.py --urdf "<...>/main_assembly"`.
 - `build_desk.py`: the desk frame (`desk_base.stl`, an Onshape export) as a black mesh; the oak top, its collision box and the fall-collision boxes on the robot are added by the page (`DESK`, `FALL_GEOMS` in `app.js`).
-- `harness.py`: runs any policy in Python MuJoCo with the same servo law and observation path as the page, to measure it outside the browser (`python harness.py walk_smoother`).
+- `harness.py`: runs any policy in Python MuJoCo with the same servo law and observation path as the page, to measure it outside the browser (`python harness.py walk_fss`).
 
 ## Credits
 
